@@ -2,7 +2,7 @@
 
 #include "LogSink.h"
 
-char* Log::endl = "\n";
+char Log::endl = '\n';
 char* Log::priorities[] = { "debug", "info", "warning", "error", "critical" };
 
 
@@ -18,6 +18,7 @@ Log::Log()
 	logfile = NULL;
 	output = &std::cout;
 	priority = priority_warning;
+	line_ended = true;
 	
 	debug.set(*this, priority_debug);
 	info.set(*this, priority_info);
@@ -48,27 +49,55 @@ void Log::set_priority(int priority)
 	Log::getInstance()->priority = priority;
 }
 
+bool Log::has_priority(int priority)
+{
+	return this->priority <= priority;	
+}
+
+
+void Log::end_line()
+{
+	line_ended = true;
+}
 
 void Log::new_line()
 {
-	if (!end_line)
+	if (!line_ended)
 		*output << std::endl;
 	else
-		end_line = false;
+		line_ended = false;
 		
 	*output << "[" << priorities[current_priority] << "] ";	
 }
 
 void Log::begin_entry(int new_priority)
 {
-	if (priority <= current_priority)
-	{		
-		if (end_line || (current_priority != new_priority))			// If the priority has changed, assume a new line
-		{
-			new_line();
-		}
+	if (!has_priority(new_priority))
+		return;
+		
+	if (line_ended || (current_priority != new_priority))			// If the priority has changed, assume a new line
+	{
+		current_priority = new_priority;
+		new_line();
 	}
+	else
+		current_priority = new_priority;
 }
+
+
+template<>
+Log& Log::operator<<(char const& value)
+{
+	*this->output << value;
+	
+	if (value == Log::endl)
+	{
+		(*this->output).flush();
+		this->end_line();
+	}
+	
+	return *this;	
+}	
 
 Log* Log::getInstance()
 {

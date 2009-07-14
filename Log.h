@@ -5,7 +5,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <typeinfo>
 
 /**
  * Simple Log-class 2009 david@crowdway.com
@@ -28,7 +27,7 @@ public:
 	static const int priority_error = 3;
 	static const int priority_critical = 4;
 	
-	static char* endl;	
+	static char endl;	
 	static char* priorities[];
 	
 	static void set_logfile(char* path);
@@ -39,7 +38,16 @@ public:
 	static LogSink warning;
 	static LogSink error;
 	static LogSink critical;	
-	static Log* getInstance();	
+	static Log* getInstance();
+	
+			
+	template<typename L>
+	Log& operator<<(L const& value)
+	{
+		*this->output << value;
+	
+		return *this;
+	}
 	
 protected:
 	Log();
@@ -50,34 +58,19 @@ private:
 	std::ofstream* logfile;
 	std::ostream* output;
 	int current_priority;
-	bool end_line;
+	void end_line();
+	bool line_ended;
+	
+	bool has_priority(int priority);
 	
 	void new_line();
 	void begin_entry(int new_priority);
+
 	
-	template <typename S>
-	friend LogSink& operator<< (LogSink& sink, S const& value);
-	
-	template<typename L>
-	friend Log& operator<<(Log& log, L const& value);
+	friend class LogSink;
 	
 	//static Log* getInstance();	
 };
-
-
-template<typename L>
-Log& operator<<(Log& log, L const& value)
-{
-	*log.output << value;
-	
-	/*if (typeid(value) == typeid(Log::endl) && (string(value).compare(Log::endl))
-	{
-		log.end_line = true;
-	}*/
-	
-	return log;
-	
-}
 
 
 #endif /*LOGGER_H_*/

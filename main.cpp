@@ -56,8 +56,14 @@ void finalize(Client& client, MailDatabase& maildb)
 int main()
 {
 	// Create logger
-	Log::set_priority(1);
-
+	Log::set_priority(0);
+	
+	Log::error << "This must work! A number: " << 15;
+	Log::error << " Here stops the line." << Log::endl;
+	Log::error << "New line!" << Log::endl;
+	
+	return 0;
+ 
 	Client client;
 	
 	// Load local database
@@ -92,7 +98,7 @@ int main()
 	//incomplete = mb->messagecount != mb->mails.size();
 	
 	
-	Log::error << 5 << 13;
+	Log::error << 513;
 	//Log::error << 5;
 	// << client.count_messages << client.get_cachecount() << endl;
 	//cout << "Checking " << client.count_messages << " (" << client.get_cachecount() << ") messages." << endl;
