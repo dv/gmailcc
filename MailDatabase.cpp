@@ -6,6 +6,7 @@
 #undef max
 #include <fstream>
 
+#include "LogSink.h"
 #include "MailLink.h"
 #include "MailBox.h"
 #include "MailRecord.h"
@@ -263,6 +264,7 @@ void MailDatabase::save()
 
 MailDatabase* MailDatabase::load(string path)
 {
+	Log::info << "Loading MailDatabase @ " << path << Log::endl;
 	MailDatabase* mdb = new MailDatabase();
 	// Change the working directory
 	chdir(path.c_str());
@@ -270,6 +272,7 @@ MailDatabase* MailDatabase::load(string path)
 	// Load databasefile
 	ifstream dbfile;
 	
+	Log::info << "Opening database-file" << Log::endl;
 	dbfile.open("database");
 	
 	if (dbfile.is_open())
@@ -314,7 +317,7 @@ MailDatabase* MailDatabase::load(string path)
 	
 	else
 	{
-		cout << "MailDatabase::load: error while trying to open database file" << endl;
+		Log::error << "Error while trying to open database file (" << path << Log::endl;
 	}
 	
 	// Load mailboxese

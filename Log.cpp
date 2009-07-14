@@ -88,6 +88,9 @@ void Log::begin_entry(int new_priority)
 template<>
 Log& Log::operator<<(char const& value)
 {
+	if (!has_priority(current_priority))
+		return *this;
+		
 	*this->output << value;
 	
 	if (value == Log::endl)

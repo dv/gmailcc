@@ -5,13 +5,19 @@
 #include <string>
 #include <vector>
 
-#include "c-client/c-client.h"
+extern "C" {
+	#include "c-client/c-client.h"
+}
+
+#undef T
 
 #define SERVER "{imap.gmail.com:993/ssl}"
 #define SERV_INBOX "{imap.gmail.com:993/ssl}INBOX"
 #define SERV_ALL "{imap.gmail.com:993/ssl}[Gmail]All Mail"
 #define MAIL_LIST_REFERENCE "{imap.gmail.com}"
 #define MAIL_LIST_PATTERN "*"
+
+//struct MAILSTREAM;
 
 using namespace std;
 
@@ -33,12 +39,13 @@ public:
 	
 	unsigned long msg_index;	// Used when looping on msgnumber through a mailbox
 								// Gets decremented when a mail is EXPUNGE'd that < msg_index
-								
+	
+	bool invalid_credentials;
 	MAILSTREAM* stream;
 	
 	vector<string> mailboxlist;	// List with mailboxes, with {...} removed already
 
-	void connect(string username, string password);
+	bool connect(string username, string password);
 	void disconnect();
 	void get_mailboxen();
 	void open_mailbox(string mailbox);				// Set the current mailbox. Also calls refresh_mailbox()

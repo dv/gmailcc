@@ -4,6 +4,7 @@
 #include "MailDatabase.h"
 #include "MailRecord.h"
 #include "LogSink.h"
+#include "Options.h"
 
 /*
  * Opened file ./.[Gmail].All Mail/1231624657.P22164Q1913.server.crowdway.com2,
@@ -18,6 +19,9 @@ david@server:~/GMailBackup/Debug$ ls -lh
  * 
  * TODO: A mail could transfer between All Mail and Trash, two different primary boxes. Our app would remove it from the first and then redownload for the second -> improve?
  * 			-> first check spam & trash
+ * TODO: Check if any mailboxes need to be removed
+ * TODO: Download backed up mails back into GMail
+ * TODO: A lot of error checking, e.g. if you can open the database-file, have write permissions, etc...
 
 Errors:
 	Logging in...(0 times)
@@ -40,6 +44,16 @@ Errors:
  * 
  */
  
+void show_version()
+{
+	cout << "GMailCloner v0.1 - released July 2009" << endl;
+	cout << "http://code.crowdway.com/gmailcloner" << endl;
+	cout << "Copyright (c) 2009 David Verhasselt (david@crowdway.com)" << endl;
+	cout << endl;
+	cout << "Compiled at " << __TIMESTAMP__ << " using g++ " << __VERSION__ << endl;
+}
+	
+ 
 void finalize(Client& client, MailDatabase& maildb)
 {
 	cout << "Finalizing" << endl;
@@ -53,30 +67,37 @@ void finalize(Client& client, MailDatabase& maildb)
 }
  
 
-int main()
+int main(int argc, char* argv[])
 {
-	// Create logger
-	Log::set_priority(0);
+	// Check configuration
+	Options options(argc, argv);
 	
-	Log::error << "This must work! A number: " << 15;
-	Log::error << " Here stops the line." << Log::endl;
-	Log::error << "New line!" << Log::endl;
+	if (options.get_version()) {
+		show_version(); return 1;
+	}
 	
-	return 0;
+	if (options.get_help() || options.incomplete())	{
+		options.show_help(); return 1;
+	}
+
+	// Start logger
+	Log::set_priority(options.get_loglevel());
+	Log::info << "Started" << Log::endl;
  
+ 	// Variables
 	Client client;
-	
-	// Load local database
-	MailDatabase* maildb = MailDatabase::load(string("/home/david/poetry/gmailbackup/maildir/"));
 	MailBox* mb;
 	MailRecord* mr;
 	ENVELOPE* envelope;
 	MESSAGECACHE* msgcache;
-		
-	client.connect("test@crowdway.com", "password");
-	//client.connect("david@crowdway.com", "password");
 	
-	// Load primary mails
+	// Load local database
+	MailDatabase* maildb = MailDatabase::load(options.get_maildir_path());
+
+	// Connect to IMAP server
+	client.connect(options.get_username(), options.get_password());
+	
+	// Load primary mailboxes
 	client.open_mailbox("[Gmail]/All Mail");
 	mail_fetchfast(client.stream, "1:*");			// We'll need to check the flags either way
 	mb = maildb->add_mailbox("[Gmail]/All Mail");
@@ -97,15 +118,12 @@ int main()
 	
 	//incomplete = mb->messagecount != mb->mails.size();
 	
-	
-	Log::error << 513;
-	//Log::error << 5;
 	// << client.count_messages << client.get_cachecount() << endl;
 	//cout << "Checking " << client.count_messages << " (" << client.get_cachecount() << ") messages." << endl;
 	
 	for(client.msg_index = 1; client.msg_index <= client.get_cachecount(); client.msg_index++)
 	{
-		cout << "Message index: " << client.msg_index << ", Count: " << client.get_cachecount() << endl;
+		Log::info << "Message index: " << client.msg_index << ", Count: " << client.get_cachecount() << Log::endl;
 		
 		mr = NULL;
 	
@@ -169,13 +187,12 @@ int main()
 	
 	maildb->sweep();
 
-	cout << "Hier geraakt" << endl;
 					
 	// Load secondary mails
 	client.get_mailboxen();	
 	for (vector<string>::iterator it = client.mailboxlist.begin(); it < client.mailboxlist.end(); it++)
 	{
-		cout << "Checking mailbox " << *it << "..." << endl;
+		Log::info << "Checking mailbox " << *it << "..." << Log::endl;
 		
 		if (it->compare("[Gmail]/All Mail") == 0)
 			continue;
@@ -190,16 +207,16 @@ int main()
 		deleted_mail = new_mail || (client.count_messages < mb->messagecount);		// If there's new mail, there's no way of knowing presearch if there are any deleted messages.
 		refresh_uids = client.uid_validity != mb->uid_validity;
 		
-		if (new_mail) cout << "New mail! ";
-		if (deleted_mail) cout << "Deleted mail! ";
-		if (refresh_uids) cout << "Old UID's!";
-		cout << endl;
+		Log::info << "This mailbox has possibly ";
+		if (!new_mail) Log::info << "no "; Log::info << "new mail, ";
+		if (!deleted_mail) Log::info << "no "; Log::info << "deleted mail, and ";
+		if (!refresh_uids) Log::info << "no "; Log::info << "refreshed UID's" << Log::endl; 
 		
 		mb->uid_validity = client.uid_validity;
 		mb->next_uid = client.uid_next;
 		mb->messagecount = client.count_messages;
 		
-		cout << "Checking " << client.count_messages << " (" << client.get_cachecount() << ") messages." << endl;
+		Log::info << "Checking " << client.count_messages << " (" << client.get_cachecount() << ") messages." << Log::endl;
 		
 		
 		if (new_mail || deleted_mail || refresh_uids)
@@ -249,10 +266,10 @@ int main()
 		}
 		
 		else
-			cout << "Nothing to be done." << endl;
+			Log::info << "Nothing to be done." << Log::endl;
 	}
 	
-	cout << "End of message checking." << endl;
+	Log::info << "End of message checking." << Log::endl;
 	
 	// Use "mail_elt" for mails we've already got, and we know the UID of
 	// Use "fetch_enveloppe" for mails we've already got, but we don't know the UID of (e.g. UID invalid or secondary mailbox)
@@ -326,7 +343,7 @@ int main()
 	
 	*/
 	
-	cout << "Ended succesfully";
+	Log::info << "Ended succesfully" << Log::endl;
 	
 	finalize(client, *maildb);
 

@@ -1,23 +1,32 @@
 #include "Client.h"
 
+//#include "LogSink.h"
+
 
 Client* Client::active;
 
 
-void Client::connect(string username, string password)
+bool Client::connect(string username, string password)
 {
 	this->username = username;
 	this->password = password;
 	
+	invalid_credentials = false;
+		
 	stream = mail_open(NULL, SERV_INBOX, OP_READONLY);
 	
 	if (this->stream != NULL)
 		printf("Log in succesfull");
 	else
+	{
 		printf("Log in not succesful");
+		return false;
+	}
 		
 	// Do some init stuff
 	get_mailboxen();
+	
+	return true;
 }
 
 void Client::open_mailbox(string mailbox)

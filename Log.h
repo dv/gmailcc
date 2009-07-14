@@ -14,6 +14,7 @@
  * 
  * For more advanced (manipulatable) logger:
  * http://stackoverflow.com/questions/290632/how-to-overload-operator-that-doesnt-take-or-return-ostream
+ * http://stdcxx.apache.org/doc/stdlibug/33-2.html
  */
 
 class LogSink;
@@ -44,6 +45,9 @@ public:
 	template<typename L>
 	Log& operator<<(L const& value)
 	{
+		if (!has_priority(current_priority))
+		return *this;
+		
 		*this->output << value;
 	
 		return *this;
