@@ -3,7 +3,7 @@
 #include "Client.h"
 #include "MailDatabase.h"
 #include "MailRecord.h"
-#include "Log.h"
+#include "LogSink.h"
 
 /*
  * Opened file ./.[Gmail].All Mail/1231624657.P22164Q1913.server.crowdway.com2,
@@ -57,7 +57,7 @@ int main()
 {
 	// Create logger
 	Log::set_priority(1);
-	
+
 	Client client;
 	
 	// Load local database
@@ -92,7 +92,10 @@ int main()
 	//incomplete = mb->messagecount != mb->mails.size();
 	
 	
-	cout << "Checking " << client.count_messages << " (" << client.get_cachecount() << ") messages." << endl;
+	Log::error << 5 << 13;
+	//Log::error << 5;
+	// << client.count_messages << client.get_cachecount() << endl;
+	//cout << "Checking " << client.count_messages << " (" << client.get_cachecount() << ") messages." << endl;
 	
 	for(client.msg_index = 1; client.msg_index <= client.get_cachecount(); client.msg_index++)
 	{

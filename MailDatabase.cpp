@@ -61,8 +61,8 @@ vector<MailRecord*>::iterator MailDatabase::get_imail(string messageid)
 {
 	for (vector<MailRecord*>::iterator iter = messages.begin(); iter < messages.end(); iter++)
 	{
-			cout << "Comparing " << messageid << " with " << (*iter)->messageid << ": ";
-			cout << messageid.compare((*iter)->messageid) << endl;
+			//cout << "Comparing " << messageid << " with " << (*iter)->messageid << ": ";
+			//cout << messageid.compare((*iter)->messageid) << endl;
 			if (messageid.compare((*iter)->messageid) == 0)
 			{
 				return iter;	
