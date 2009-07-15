@@ -27,6 +27,9 @@ MailBox* MailDatabase::add_mailbox(string mailbox)
 	
 	// Doesn't exist yet, create it
 	mkdir(box->path().c_str(), 0700);
+	mkdir((box->path() + "/cur").c_str(), 0700);
+	mkdir((box->path() + "/new").c_str(), 0700);
+	mkdir((box->path() + "/tmp").c_str(), 0700);
 	
 	mailboxes.push_back(box);
 	

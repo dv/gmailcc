@@ -57,6 +57,7 @@ public:
 	void disconnect();
 	void get_mailboxen();
 	void open_mailbox(string mailbox) throw(ClientException);				// Set the current mailbox. Also calls refresh_mailbox()
+	void close_mailbox();
 	void refresh_mailbox(string mailbox);			// Retrieve the messagecount, UID-next and UID-validity
 	unsigned long get_mailcount();
 	unsigned long get_mailcount(string mailbox);

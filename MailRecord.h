@@ -16,7 +16,7 @@
 
 
 
-#define MD_TAIL "2,"
+#define MD_TAIL ":2,"
 
 #include "MailLink.h"
 class MailBox;

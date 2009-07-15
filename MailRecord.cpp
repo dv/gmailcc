@@ -156,7 +156,7 @@ MailLink* MailRecord::add_to_mailbox(MailBox* mailbox, unsigned long uid, string
 			
 		bool exists = false;
 		if (path.empty())
-			path = mailbox->path() + "/" + generate_md_filename() + get_md_info();
+			path = mailbox->path() + "/cur/" + generate_md_filename() + get_md_info();
 		else
 			exists = true;
 			

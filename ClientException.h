@@ -8,7 +8,7 @@ class Client;
 class ClientException: public std::exception
 {
 public:
-	ClientException(Client *client);
+	ClientException(Client *client): client(client) {};
 private:
 	Client *client;
 };

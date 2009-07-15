@@ -10,6 +10,7 @@ void Client::open_stream(string mailbox, long options) throw(ClientException)
 	invalid_credentials = false;
 	char* mb = cpystr(remote(mailbox).c_str());
 	
+	close_mailbox();
 	stream = mail_open(NULL, mb, options);
 	
 	free(mb);
@@ -37,6 +38,12 @@ void Client::open_mailbox(string mailbox) throw(ClientException)
 {
 	open_stream(mailbox);	
 	refresh_mailbox(mailbox);	
+}
+
+void Client::close_mailbox()
+{
+	if (stream)
+		stream = mail_close(stream);	
 }
 
 void Client::refresh_mailbox(string mailbox)
@@ -96,6 +103,7 @@ Client::Client()
 	#include "c-client/linkage.c"
 	
 	Client::active = this;
+	stream = NULL;
 }
 
 Client::~Client()

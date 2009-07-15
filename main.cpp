@@ -24,6 +24,7 @@ david@server:~/GMailBackup/Debug$ ls -lh
  * TODO: A lot of error checking, e.g. if you can open the database-file, have write permissions, etc...
  * TODO: When using invalid credentials, Client tries 3 times with same credentials, of which 2 times are obviously redundant. Check if there is a method
  * 			to cancel a pending connection and execute it in mm_log.
+ * TODO: Check what happens when an external client (i.e. webmail) marks a mail(link) as "read". Is it still found? Is the mark removed when updating?
 
 Errors:
 	Logging in...(0 times)
