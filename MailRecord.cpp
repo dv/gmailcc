@@ -1,5 +1,9 @@
 #include "MailRecord.h"
 
+#include <boost/filesystem.hpp>
+namespace bf = boost::filesystem;
+
+#include "LogSink.h"
 #include "MailLink.h"
 #include "MailBox.h"
 
@@ -115,12 +119,8 @@ void MailRecord::set_flag_trashed(bool flag_trashed)
 void MailRecord::save_content(string header, string content)
 {
 	ofstream mfile;	
-	
-	char path[mainlink->path.size() + 2];
-	strcpy(path, "./");
-	strcpy(path+2, mainlink->path.c_str());
-	
-	mfile.open(path);
+
+	mfile.open(mainlink->path.c_str());
 	
 	if (mfile.is_open())
 	{
@@ -128,7 +128,7 @@ void MailRecord::save_content(string header, string content)
 		mfile << content;
 		mfile.close();
 	}
-	else cout << "Unable to open file\n";
+	else Log::error << "Unable to open file " << mainlink->path << Log::endl;
 }
 
 MailLink* MailRecord::add_to_mailbox(MailBox* mailbox, unsigned long uid, string path)
@@ -156,7 +156,7 @@ MailLink* MailRecord::add_to_mailbox(MailBox* mailbox, unsigned long uid, string
 			
 		bool exists = false;
 		if (path.empty())
-			path = mailbox->path() + "/cur/" + generate_md_filename() + get_md_info();
+			path = mailbox->get_path() + "cur/" + generate_md_filename() + get_md_info();
 		else
 			exists = true;
 			
@@ -173,10 +173,10 @@ MailLink* MailRecord::add_to_mailbox(MailBox* mailbox, unsigned long uid, string
 		if (!exists && (this->links.size() > 1))	// Create a link to the original
 		{
 			string sourcepath = this->mainlink->path.c_str();
-			sourcepath.insert(0, "../");
+			//sourcepath.insert(0, "../");
 			
-			if (symlink(sourcepath.c_str(), path.c_str()))
-				perror("MailRecord::add_to_mailbox: creating symlink failed");
+			bf::create_hard_link(sourcepath, path);
+			//	perror("MailRecord::add_to_mailbox: creating symlink failed");
 		}
 		
 		if (exists)
@@ -284,28 +284,6 @@ void MailRecord::extract_base_path(string& path)
 		perror("MailRecord::update_path: Unable to parse pathname"); 
 }
 
-/**
- * Convert a given mailbox name to Maildir format dir
- */
-string MailRecord::convert_to_path(string& mailbox)
-{
-	string box = "." + mailbox;
-	size_t index = box.find("/");
-	
-	while(index != string::npos)
-	{
-			box.replace(index, 1, ".");
-			index = box.find("/", index);
-			
-			//if (mkdir(box.substr(0, index).c_str(), 600))
-			//	perror("MailRecord::update_path: unable to mkdir");
-	}
-	
-	if (mkdir(box.substr(0, index).c_str(), 600))
-		perror("MailRecord::update_path: unable to mkdir");
-	
-	return box;
-}
 
 string MailRecord::generate_md_filename()
 {

@@ -92,13 +92,19 @@ public:
 	void remove_mail(string messageid, MailBox* mailbox = NULL);
 	
 	void sweep();
+	
+	string get_maildir();
 
 	MailDatabase();
 	virtual ~MailDatabase();
 	
 private:
+	string maildir;
+	
 	bool is_primary(string mailbox);
 	MailBox* get_mailbox(string mailbox);
+	
+	static void create_maildir(string path);
 	
 };
 

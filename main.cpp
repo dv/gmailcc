@@ -27,6 +27,7 @@ david@server:~/GMailBackup/Debug$ ls -lh
  * TODO: Check what happens when an external client (i.e. webmail) marks a mail(link) as "read". Is it still found? Is the mark removed when updating?
  * TODO: GMail accepts 10 simultaneous connections (MAILSTREAM), try to use them to check multiple boxes at the same time
  * 				-> create a simultaneous connection by calling mail_open() without an opened stream to recycle (i.e. mail_open(NULL, mb, options); )
+ * TODO: Add error handling for create_hard_link
 
 Errors:
 	Logging in...(0 times)

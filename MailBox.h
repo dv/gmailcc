@@ -21,15 +21,16 @@ public:
 
 	bool marked;						// Marked for removal
 	
-	string path();
+	string get_path();
 	void mark();
 	void dirty();
 	int sweep();
 	
-	MailBox(MailDatabase* maildb);
+	MailBox(MailDatabase* maildb, string name);
 	~MailBox();
 	
 private:
+	string path;
 	bool dirtied;						// Needs sweeping to get rid of removed links
 	MailDatabase* maildb;
 };

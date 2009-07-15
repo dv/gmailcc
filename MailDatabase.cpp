@@ -5,6 +5,10 @@
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
+#include <exception>
+
+#include <boost/filesystem.hpp>
+namespace bf = boost::filesystem;
 
 #include "LogSink.h"
 #include "MailLink.h"
@@ -19,17 +23,12 @@ MailBox* MailDatabase::add_mailbox(string mailbox)
 	if (box != NULL)
 		return box;
 		
-	box = new MailBox(this);
-	box->name = mailbox;
+	box = new MailBox(this, mailbox);
 	
-	if (is_primary(mailbox))
-		box->primary = true;
-	
-	// Doesn't exist yet, create it
-	mkdir(box->path().c_str(), 0700);
-	mkdir((box->path() + "/cur").c_str(), 0700);
-	mkdir((box->path() + "/new").c_str(), 0700);
-	mkdir((box->path() + "/tmp").c_str(), 0700);
+	box->primary = is_primary(mailbox);
+
+	// Make sure the directory structure is there
+	create_maildir(box->get_path());
 	
 	mailboxes.push_back(box);
 	
@@ -269,56 +268,21 @@ MailDatabase* MailDatabase::load(string path)
 {
 	Log::info << "Loading MailDatabase @ " << path << Log::endl;
 	
-	// Checking if path is correct
-	struct stat info;
-	if (stat(path.c_str(), &info) == 0)	// File or directory exists
-	{
-		if (info.st_mode & S_IFREG)
-		{
-			Log::critical << "Unable to load the database: given path refers to a file, not a directory." << Log::endl;
-			return NULL;
-		}
-		if (! (info.st_mode & S_IWRITE))
-		{
-			Log::critical << "Unable to load the database: no write permissions to given path." << Log::endl;
-			return NULL;
-		}
-		if (! (info.st_mode & S_IREAD))
-		{
-			Log::critical << "Unable to load the database: no read permissions to given path." << Log::endl;
-			return NULL;
-		}
-		
-		Log::info << "Given path is OK." << Log::endl;
-	}
-	else
-	{
-		Log::info << "Given path does not exist or we do not have enough permissions in the parent directory." << Log::endl;
-		Log::info << "Trying to create the directory." << Log::endl;
-		
-		if(mkdir(path.c_str(), 0700) == 0)
-		{
-			Log::info << "Succesfully created the directory." << Log::endl;
-		}
-		else
-		{
-			Log::critical << "Given path does not exist and we were not able to create it." << Log::endl;
-			Log::critical << "Please check for existing files and their permissions." << Log::endl;
-			
-			return NULL;
-		}
-	}
+	// Make sure it ends with "/"
+	if (path[path.size()-1] != '/')
+		path += '/';
+	
+	// Make sure we have a Maildir-format type directory structure
+	create_maildir(path);	
 
 	MailDatabase* mdb = new MailDatabase();
-	
-	// Change the working directory
-	chdir(path.c_str());
+	mdb->maildir = path;
 	
 	// Load databasefile
 	ifstream dbfile;
 	
 	Log::info << "Opening database-file" << Log::endl;
-	dbfile.open("database");
+	dbfile.open((path + "database").c_str());
 	
 	if (dbfile.is_open())
 	{
@@ -362,7 +326,7 @@ MailDatabase* MailDatabase::load(string path)
 	
 	else
 	{
-		Log::error << "Error while trying to open database file ( " << path <<  "/" << "database" << " )" << Log::endl;
+		Log::error << "Error while trying to open database file ( " << path << "database" << " )" << Log::endl;
 	}
 	
 	// Load mailboxese
@@ -389,6 +353,38 @@ void MailDatabase::sweep()
 	for (vector<MailBox*>::iterator iter = mailboxes.begin(); iter < mailboxes.end(); iter++)
 	{
 		(*iter)->sweep();	
+	}
+}
+
+string MailDatabase::get_maildir()
+{
+	return maildir;
+}
+
+/*
+ * Creates a directory structure fit for Maildir format.
+ * Example:
+ * 		.dir_path/new
+ * 		.dir_path/cur
+ * 		.dir_path/tmp
+ */
+void MailDatabase::create_maildir(string dir_path)
+{
+	bf::path path(dir_path);
+	bf::path subpath;
+	
+	bf::path paths[] = {path, path / "cur", path / "new", path / "tmp"};
+		
+	for (uint i = 0; i < 4; i++)
+	{
+		if (!bf::exists(paths[i])) {
+			Log::info << "Creating directory " << paths[i] << Log::endl;
+			bf::create_directory(paths[i]);
+		}
+		else if (!bf::is_directory(paths[i])) {
+			Log::error << "Directory at " << paths[i] << " already exists and is not a directory." << Log::endl;
+			throw exception();
+		}
 	}
 }
 	

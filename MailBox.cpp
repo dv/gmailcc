@@ -4,15 +4,8 @@
 #include "MailLink.h"
 
 
-string MailBox::path()
+string MailBox::get_path()
 {
-	string path = "." + name;
-	
-	size_t index = 0;
-	
-	while((index = path.find("/", index)) != string::npos)
-		path.replace(index, 1, ".");
-	
 	return path;
 }
 
@@ -55,9 +48,16 @@ int MailBox::sweep()
 	return count;
 }
 
-MailBox::MailBox(MailDatabase* maildb)
+MailBox::MailBox(MailDatabase* maildb, string name): name(name), maildb(maildb)
 {
-	this->maildb = maildb;	
+	path = "." + name; 
+	
+	// Generate directorypath
+	size_t index = 0;	
+	while((index = path.find("/", index)) != string::npos)
+		path.replace(index, 1, ".");
+	
+	path = maildb->get_maildir() + path + "/";
 }
 
 MailBox::~MailBox()
