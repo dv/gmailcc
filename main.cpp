@@ -97,19 +97,17 @@ int main(int argc, char* argv[])
 	MailDatabase* maildb = MailDatabase::load(options.get_maildir_path());
 
 	// Connect to IMAP server
-	if (!client.connect(options.get_username(), options.get_password()))
-	{
-		Log::critical << "Unable to log-in to server because of ";
-		
-		if (client.invalid_credentials)
-			Log::critical << "invalid credentials. Please check your username and password." << Log::endl;
-		else
-			Log::critical << "an unknown reason. Please check your internet connection." << Log::endl;
-		
-		Log::critical << "Aborting." << Log::endl;
-		
+	try {
+		client.connect(options.get_username(), options.get_password());
+	} catch (AuthClientException &e) {
+		Log::critical << "Unable to log-in to server because of invalid credentials. Please check your username and password" << Log::endl;
+		finalize(client, *maildb);
+	} catch(ClientException &e) {
+		Log::critical << "Unable to log-in to server because of an unknown reason. Please check your internet connection." << Log::endl;
 		finalize(client, *maildb);
 	}
+	
+	Log::info << "Connection succesfully established. Log-in succesful." << Log::endl;
 	
 	
 	// Load primary mailboxes
@@ -133,22 +131,20 @@ int main(int argc, char* argv[])
 	
 	//incomplete = mb->messagecount != mb->mails.size();
 	
+	Log::info << "Mailbox has " << client.count_messages << " messages." << Log::endl;
 	// << client.count_messages << client.get_cachecount() << endl;
 	//cout << "Checking " << client.count_messages << " (" << client.get_cachecount() << ") messages." << endl;
 	
-	for(client.msg_index = 1; client.msg_index <= client.get_cachecount(); client.msg_index++)
-	{
+	for(client.msg_index = 1; client.msg_index <= client.get_cachecount(); client.msg_index++) {
 		Log::info << "Message index: " << client.msg_index << ", Count: " << client.get_cachecount() << Log::endl;
 		
 		mr = NULL;
 	
-		if (!refresh_uids)
-		{
+		if (!refresh_uids) {
 			mr = maildb->get_mail(mail_uid(client.stream, client.msg_index));		// Try to load the email from our local database using the UID (long)
 		}
 		
-		if (mr == NULL)		// If UID is invalid or it's a new mail
-		{
+		if (mr == NULL) {	// If UID is invalid or it's a new mail
 			envelope = mail_fetchenvelope(client.stream, client.msg_index);			// First fetch the mail metadata
 			
 			if (envelope == NIL) finalize(client, *maildb);							// Connection broken

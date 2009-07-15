@@ -1,43 +1,42 @@
+#include <exception>
+
 #include "Client.h"
-
-
 #include "LogSink.h"
-
-
 
 Client* Client::active;
 
+void Client::open_stream(string mailbox, long options) throw(ClientException)
+{
+	invalid_credentials = false;
+	char* mb = cpystr(remote(mailbox).c_str());
+	
+	stream = mail_open(NULL, mb, options);
+	
+	free(mb);
+	
+	if (stream == NULL) {
+		if (invalid_credentials)
+			throw AuthClientException(this);
+		else
+			throw ClientException(this);
+	}	
+}
 
-bool Client::connect(string username, string password)
+void Client::connect(string username, string password) throw(ClientException)
 {
 	this->username = username;
 	this->password = password;
 	
-	invalid_credentials = false;
-		
-	stream = mail_open(NULL, SERV_INBOX, OP_READONLY);
+	open_stream(SERV_INBOX);
 	
-	if (this->stream != NULL) { 
-		Log::info << "Log-in succesful." << Log::endl;
-		
-		get_mailboxen();	
-		return true;
-	}
-	else
-	{
-		Log::info << "Log-in unsuccesful." << Log::endl;
-		return false;
-	}
+	// Get the mailboxes as initialization
+	get_mailboxen();
 }
 
-void Client::open_mailbox(string mailbox)
+void Client::open_mailbox(string mailbox) throw(ClientException)
 {
-	char* mb = cpystr(remote(mailbox).c_str());
-	stream = mail_open(stream, mb, OP_READONLY);
-	
+	open_stream(mailbox);	
 	refresh_mailbox(mailbox);	
-	
-	free(mb);
 }
 
 void Client::refresh_mailbox(string mailbox)

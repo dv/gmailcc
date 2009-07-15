@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <exception>
+
 
 extern "C" {
 	#include "c-client/c-client.h"
@@ -22,6 +24,8 @@ extern "C" {
 #define MSG_INVALID_CREDENTIALS "[ALERT] Invalid credentials (Failure)"
 
 //struct MAILSTREAM;
+
+#include "ClientException.h"
 
 using namespace std;
 
@@ -49,10 +53,10 @@ public:
 	
 	vector<string> mailboxlist;	// List with mailboxes, with {...} removed already
 
-	bool connect(string username, string password);
+	void connect(string username, string password) throw(ClientException);
 	void disconnect();
 	void get_mailboxen();
-	void open_mailbox(string mailbox);				// Set the current mailbox. Also calls refresh_mailbox()
+	void open_mailbox(string mailbox) throw(ClientException);				// Set the current mailbox. Also calls refresh_mailbox()
 	void refresh_mailbox(string mailbox);			// Retrieve the messagecount, UID-next and UID-validity
 	unsigned long get_mailcount();
 	unsigned long get_mailcount(string mailbox);
@@ -72,11 +76,15 @@ public:
 private:
 	string username;
 	string password;
+	
+	void open_stream(string mailbox, long options = OP_READONLY) throw(ClientException); // Wrapper for mail_open
 
 
 	//string current_mailbox;
 	//void change_mailbox(string new_mailbox);
 	
 };
+
+
 
 #endif /*CLIENT_H_*/
