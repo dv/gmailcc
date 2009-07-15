@@ -10,8 +10,8 @@ void Client::open_stream(string mailbox, long options) throw(ClientException)
 	invalid_credentials = false;
 	char* mb = cpystr(remote(mailbox).c_str());
 	
-	close_mailbox();
-	stream = mail_open(NULL, mb, options);
+	//close_mailbox();
+	stream = mail_open(stream, mb, options);
 	
 	free(mb);
 	

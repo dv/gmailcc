@@ -25,6 +25,8 @@ david@server:~/GMailBackup/Debug$ ls -lh
  * TODO: When using invalid credentials, Client tries 3 times with same credentials, of which 2 times are obviously redundant. Check if there is a method
  * 			to cancel a pending connection and execute it in mm_log.
  * TODO: Check what happens when an external client (i.e. webmail) marks a mail(link) as "read". Is it still found? Is the mark removed when updating?
+ * TODO: GMail accepts 10 simultaneous connections (MAILSTREAM), try to use them to check multiple boxes at the same time
+ * 				-> create a simultaneous connection by calling mail_open() without an opened stream to recycle (i.e. mail_open(NULL, mb, options); )
 
 Errors:
 	Logging in...(0 times)
