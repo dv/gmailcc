@@ -22,6 +22,8 @@ david@server:~/GMailBackup/Debug$ ls -lh
  * TODO: Check if any mailboxes need to be removed
  * TODO: Download backed up mails back into GMail
  * TODO: A lot of error checking, e.g. if you can open the database-file, have write permissions, etc...
+ * TODO: When using invalid credentials, Client tries 3 times with same credentials, of which 2 times are obviously redundant. Check if there is a method
+ * 			to cancel a pending connection and execute it in mm_log.
 
 Errors:
 	Logging in...(0 times)
@@ -95,7 +97,20 @@ int main(int argc, char* argv[])
 	MailDatabase* maildb = MailDatabase::load(options.get_maildir_path());
 
 	// Connect to IMAP server
-	client.connect(options.get_username(), options.get_password());
+	if (!client.connect(options.get_username(), options.get_password()))
+	{
+		Log::critical << "Unable to log-in to server because of ";
+		
+		if (client.invalid_credentials)
+			Log::critical << "invalid credentials. Please check your username and password." << Log::endl;
+		else
+			Log::critical << "an unknown reason. Please check your internet connection." << Log::endl;
+		
+		Log::critical << "Aborting." << Log::endl;
+		
+		finalize(client, *maildb);
+	}
+	
 	
 	// Load primary mailboxes
 	client.open_mailbox("[Gmail]/All Mail");

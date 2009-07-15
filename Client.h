@@ -10,12 +10,15 @@ extern "C" {
 }
 
 #undef T
+#undef min
 
 #define SERVER "{imap.gmail.com:993/ssl}"
 #define SERV_INBOX "{imap.gmail.com:993/ssl}INBOX"
 #define SERV_ALL "{imap.gmail.com:993/ssl}[Gmail]All Mail"
 #define MAIL_LIST_REFERENCE "{imap.gmail.com}"
 #define MAIL_LIST_PATTERN "*"
+
+#define MSG_INVALID_CREDENTIALS "[ALERT] Invalid credentials (Failure)"
 
 //struct MAILSTREAM;
 

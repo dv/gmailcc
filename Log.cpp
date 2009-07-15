@@ -72,16 +72,14 @@ void Log::new_line()
 
 void Log::begin_entry(int new_priority)
 {
+	int last_priority = current_priority;
+	current_priority = new_priority;
+	
 	if (!has_priority(new_priority))
 		return;
-		
-	if (line_ended || (current_priority != new_priority))			// If the priority has changed, assume a new line
-	{
-		current_priority = new_priority;
+
+	if (line_ended || (last_priority != new_priority))			// If the priority has changed, assume a new line
 		new_line();
-	}
-	else
-		current_priority = new_priority;
 }
 
 

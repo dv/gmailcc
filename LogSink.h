@@ -1,10 +1,6 @@
 #ifndef LOGSINK_H_
 #define LOGSINK_H_
 
-#include <iostream>
-#include <cstdlib>
-
-
 #include "Log.h"
 
 class LogSink

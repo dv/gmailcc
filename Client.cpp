@@ -1,6 +1,8 @@
 #include "Client.h"
 
-//#include "LogSink.h"
+
+#include "LogSink.h"
+
 
 
 Client* Client::active;
@@ -15,18 +17,17 @@ bool Client::connect(string username, string password)
 		
 	stream = mail_open(NULL, SERV_INBOX, OP_READONLY);
 	
-	if (this->stream != NULL)
-		printf("Log in succesfull");
+	if (this->stream != NULL) { 
+		Log::info << "Log-in succesful." << Log::endl;
+		
+		get_mailboxen();	
+		return true;
+	}
 	else
 	{
-		printf("Log in not succesful");
+		Log::info << "Log-in unsuccesful." << Log::endl;
 		return false;
 	}
-		
-	// Do some init stuff
-	get_mailboxen();
-	
-	return true;
 }
 
 void Client::open_mailbox(string mailbox)
@@ -105,8 +106,8 @@ Client::~Client()
 /* Callback Functions */
 void Client::mm_login (NETMBX *mb,char *user,char *pwd,long trial)
 {
-	printf("Logging in...(%d times)\n", trial);
-	
+	Log::info << "[c-client] Trying to log in (take " << trial << ")" << Log::endl; 
+		
 	strcpy(user, username.c_str());
 	strcpy(pwd, password.c_str());	
 }
@@ -192,8 +193,7 @@ void mm_flags (MAILSTREAM *stream,unsigned long number)
 
 void mm_notify (MAILSTREAM *stream,char *string,long errflg)
 {
-	printf("mm_notify: ");
-  mm_log (string,errflg);
+	mm_log (string,errflg);
 }
 
 
@@ -225,24 +225,39 @@ void mm_status (MAILSTREAM *stream,char *mailbox,MAILSTATUS *status)
 }
 
 
-void mm_log (char *string,long errflg)
+/* Here come all the error message through. Some samples:
+ * Wrong credentials:
+ * 	long WARN or PARSE, message: [ALERT] Invalid credentials (Failure)
+ * 	No internet connection:
+ * 	long ERROR, message: No such host as imap.gmail.com
+ * 
+ *  Wrong IP/DNS:
+ * 	it just waits endlessly after NIL - Trying IP address [xx.xx.xx.xx]
+ * 	after some minutes it gives:
+ * 		long ERROR, message: Can't connect to xxxxxxxxx: Connection timed out
+ */
+
+void mm_log (char *msg,long errflg)
 {
- 	printf("mm_log: ");
-  switch ((short) errflg) {
-  case NIL:
-    printf ("[%s]\n",string);
-    break;
-  case PARSE:
-  case WARN:
-    printf ("%%%s\n",string);
-    break;
-  case ERROR:
-    printf ("?%s\n",string);
-    break;
-  default:
-  	printf("!!%d: %s",errflg, string);
-  	break; 
-  }
+	switch ((short) errflg) {
+	case NIL:
+		Log::info << "[c-client] [warning] " << msg << Log::endl;
+		break;
+	case PARSE:
+	case WARN:
+		Log::info << "[c-client] [warning] " << msg << Log::endl;
+		
+		if (strcmp(msg, MSG_INVALID_CREDENTIALS) == 0)
+			Client::active->invalid_credentials = true;
+		
+		break;
+	case ERROR:
+		Log::info << "[c-client] [error] " << msg << Log::endl;
+		break;
+	default:
+		Log::info << "[c-client] " << msg << Log::endl;
+		break; 
+	}
 }
 
 
