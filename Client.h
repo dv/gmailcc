@@ -11,6 +11,7 @@ extern "C" {
 
 #undef T
 #undef min
+#undef max
 
 #define SERVER "{imap.gmail.com:993/ssl}"
 #define SERV_INBOX "{imap.gmail.com:993/ssl}INBOX"

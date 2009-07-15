@@ -1,8 +1,6 @@
 #ifndef MAILDATABASE_H_
 #define MAILDATABASE_H_
 
-#include <sys/stat.h>
-
 #include <string>
 #include <vector>
 

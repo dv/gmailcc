@@ -1,9 +1,9 @@
 #include "MailDatabase.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <cstdlib>
 #include <iostream>
-#undef min
-#undef max
 #include <fstream>
 
 #include "LogSink.h"
@@ -265,7 +265,49 @@ void MailDatabase::save()
 MailDatabase* MailDatabase::load(string path)
 {
 	Log::info << "Loading MailDatabase @ " << path << Log::endl;
+	
+	// Checking if path is correct
+	struct stat info;
+	if (stat(path.c_str(), &info) == 0)	// File or directory exists
+	{
+		if (info.st_mode & S_IFREG)
+		{
+			Log::critical << "Unable to load the database: given path refers to a file, not a directory." << Log::endl;
+			return NULL;
+		}
+		if (! (info.st_mode & S_IWRITE))
+		{
+			Log::critical << "Unable to load the database: no write permissions to given path." << Log::endl;
+			return NULL;
+		}
+		if (! (info.st_mode & S_IREAD))
+		{
+			Log::critical << "Unable to load the database: no read permissions to given path." << Log::endl;
+			return NULL;
+		}
+		
+		Log::info << "Given path is OK." << Log::endl;
+	}
+	else
+	{
+		Log::info << "Given path does not exist or we do not have enough permissions in the parent directory." << Log::endl;
+		Log::info << "Trying to create the directory." << Log::endl;
+		
+		if(mkdir(path.c_str(), 0700) == 0)
+		{
+			Log::info << "Succesfully created the directory." << Log::endl;
+		}
+		else
+		{
+			Log::critical << "Given path does not exist and we were not able to create it." << Log::endl;
+			Log::critical << "Please check for existing files and their permissions." << Log::endl;
+			
+			return NULL;
+		}
+	}
+
 	MailDatabase* mdb = new MailDatabase();
+	
 	// Change the working directory
 	chdir(path.c_str());
 	
@@ -317,7 +359,7 @@ MailDatabase* MailDatabase::load(string path)
 	
 	else
 	{
-		Log::error << "Error while trying to open database file (" << path << Log::endl;
+		Log::error << "Error while trying to open database file ( " << path <<  "/" << "database" << " )" << Log::endl;
 	}
 	
 	// Load mailboxese
