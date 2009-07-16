@@ -55,8 +55,8 @@ Errors:
  
 void show_version()
 {
-	cout << "GMailCloner v0.1 - released July 2009" << endl;
-	cout << "http://code.crowdway.com/gmailcloner" << endl;
+	cout << "Gmail Carbon Copy v0.1 - released July 2009" << endl;
+	cout << "http://code.crowdway.com/gmailcc" << endl;
 	cout << "Copyright (c) 2009 David Verhasselt (david@crowdway.com)" << endl;
 	cout << endl;
 	cout << "Compiled at " << __TIMESTAMP__ << " using g++ " << __VERSION__ << endl;

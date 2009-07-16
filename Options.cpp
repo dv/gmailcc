@@ -13,7 +13,7 @@ Options::Options(int argc, char* argv[])
 		("version", "show version information")
 		("loglevel", bo::value<int>()->default_value(2), "set loglevel")
 		("logfile", bo::value<std::string>(), "file to log to")
-		("username,u", bo::value<std::string>(), "username to be used to log in. If you're using GMail, you can omit @gmail.com. If you're using Google Apps, please add your domain, e.g. john@smith.com")
+		("username,u", bo::value<std::string>(), "username to be used to log in. If you're using Gmail, you can omit @gmail.com. If you're using Google Apps, please add your domain, e.g. john@smith.com")
 		("password,p", bo::value<std::string>(), "password to log in with")
 		("maildir,d", bo::value<std::string>(), "folder to backup your mails to")
 	;
