@@ -28,6 +28,9 @@ david@server:~/GMailBackup/Debug$ ls -lh
  * TODO: GMail accepts 10 simultaneous connections (MAILSTREAM), try to use them to check multiple boxes at the same time
  * 				-> create a simultaneous connection by calling mail_open() without an opened stream to recycle (i.e. mail_open(NULL, mb, options); )
  * TODO: Add error handling for create_hard_link
+ * TODO: When implementing the feature to sync back to gmail, check all links of a mail for one that contains "S" for read. If one contains it
+		change all links to read (add "S") to emulate GMail's Label implementation. One could create a daemon that continually checks
+		all mails for changes like this to then rename all links.
 
 Errors:
 	Logging in...(0 times)
