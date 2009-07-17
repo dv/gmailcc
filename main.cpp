@@ -7,23 +7,9 @@
 #include "Options.h"
 
 /*
- * Opened file ./.[Gmail].All Mail/1231624657.P22164Q1913.server.crowdway.com2,
-Opened file ./.[Gmail].All Mail/1231624658.P22164Q1914.server.crowdway.com2,
-?Bad msgno 1921 in mail_elt, nmsgs = 1920
-Aborted
-You have new mail in /var/mail/david
-david@server:~/GMailBackup/Debug$ ls -lh
- * 
- * 
- * 
- * 
  * TODO: A mail could transfer between All Mail and Trash, two different primary boxes. Our app would remove it from the first and then redownload for the second -> improve?
  * 			-> first check spam & trash
- * TODO: Check if any mailboxes need to be removed
- * TODO: Download backed up mails back into GMail
  * TODO: A lot of error checking, e.g. if you can open the database-file, have write permissions, etc...
- * TODO: When using invalid credentials, Client tries 3 times with same credentials, of which 2 times are obviously redundant. Check if there is a method
- * 			to cancel a pending connection and execute it in mm_log.
  * TODO: Check what happens when an external client (i.e. webmail) marks a mail(link) as "read". Is it still found? Is the mark removed when updating?
  * TODO: GMail accepts 10 simultaneous connections (MAILSTREAM), try to use them to check multiple boxes at the same time
  * 				-> create a simultaneous connection by calling mail_open() without an opened stream to recycle (i.e. mail_open(NULL, mb, options); )
@@ -55,7 +41,7 @@ Errors:
  
 void show_version()
 {
-	cout << "Gmail Carbon Copy v0.1 - released July 2009" << endl;
+	cout << "Gmail Carbon Copy v0.1.x - released July 2009" << endl;
 	cout << "http://code.crowdway.com/gmailcc" << endl;
 	cout << "Copyright (c) 2009 David Verhasselt (david@crowdway.com)" << endl;
 	cout << endl;
