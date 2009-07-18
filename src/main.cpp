@@ -49,14 +49,18 @@ void show_version()
 }
 	
  
-void finalize(Client& client, MailDatabase& maildb)
+void finalize(Client& client, MailDatabase& maildb, char* error = NULL)
 {
-	cout << "Finalizing" << endl;
+	if (error != NULL)
+		Log::error << "Finalizing with error: " << error << Log::endl;
+	else
+		Log::error << "Finalizing without error." << Log::endl;
+
 	client.disconnect();
 	
 	maildb.save();
 	
-	cout << "Finalized" << endl;
+	cout << "Finalized. Aborting..." << endl;
 	
 	abort();	
 }
@@ -140,7 +144,7 @@ int main(int argc, char* argv[])
 		if (mr == NULL) {	// If UID is invalid or it's a new mail
 			envelope = mail_fetchenvelope(client.stream, client.msg_index);			// First fetch the mail metadata
 			
-			if (envelope == NIL) finalize(client, *maildb);							// Connection broken
+			if (envelope == NIL) finalize(client, *maildb, "Envelope is NIL");							// Connection broken
 			
 			mr = maildb->get_mail(envelope->message_id);							// Again, try to load the email from our local database, this time using the message ID (string)
 			
@@ -148,15 +152,17 @@ int main(int argc, char* argv[])
 			{
 				uid = mail_uid(client.stream, client.msg_index);
 				
-				if (uid == 0) finalize(client, *maildb);	// Connection broken
+				if (uid == 0) finalize(client, *maildb, "(new mail) mail_uid is 0");	// Connection broken
 				
 				header = mail_fetchheader_full(client.stream, client.msg_index, NULL, NULL, FT_PREFETCHTEXT);
 				
-				if (!header[0]) finalize(client, *maildb); // Conection broken
+				if (!header[0]) finalize(client, *maildb, "header is NIL"); // Conection broken
 				
 				content = mail_fetchtext_full(client.stream, client.msg_index, NULL, FT_PEEK);
 				
-				if (!content[0]) finalize(client, *maildb); // Connection broken					
+// TODO: if content[0] it could be because of an empty mail OR an error. Create a "check_error" function and test it
+//				if (!content[0]) finalize(client, *maildb, "content is NIL"); // Connection broken
+				if (!content[0]) Log::error << "An empty mail or a broken connection" << Log::endl;					
 				
 				
 				mr = maildb->new_mail(envelope->message_id, uid, header, content);
@@ -164,7 +170,7 @@ int main(int argc, char* argv[])
 			else			// Existing mail
 			{
 				uid = mail_uid(client.stream, client.msg_index);				
-				if (uid == 0) finalize(client, *maildb);	// Connection broken
+				if (uid == 0) finalize(client, *maildb, "mail_uid is 0");	// Connection broken
 				
 				mr = maildb->new_mail(envelope->message_id, mb, uid);		// Just update the UID
 			}
@@ -172,7 +178,7 @@ int main(int argc, char* argv[])
 		
 		msgcache = mail_elt(client.stream, client.msg_index);
 		
-		if (msgcache == NIL)  finalize(client, *maildb);	// Connection broken
+		if (msgcache == NIL)  finalize(client, *maildb, "mail_elt returned NIL");	// Connection broken
 		
 		mr->set_flag_draft(msgcache->draft == 1);
 		mr->set_flag_flagged(msgcache->flagged == 1);
