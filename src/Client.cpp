@@ -104,6 +104,11 @@ Client::Client()
 	
 	Client::active = this;
 	stream = NULL;
+	
+	// Set operational parameters
+	int value;
+	value = 1; mail_parameters(NIL, SET_MAXLOGINTRIALS, &value);
+	value = 5; mail_parameters(NIL, SET_OPENTIMEOUT, &value);
 }
 
 Client::~Client()
