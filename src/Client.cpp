@@ -11,7 +11,7 @@ void Client::open_stream(string mailbox, long options) throw(ClientException)
 	char* mb = cpystr(remote(mailbox).c_str());
 	
 	//close_mailbox();
-	stream = mail_open(stream, mb, options);
+	stream = mail_open(stream, mb, options | OP_READONLY);
 	
 	free(mb);
 	
@@ -270,7 +270,7 @@ void mm_log (char *msg,long errflg)
 
 void mm_dlog (char *string)
 {
-  puts (string);
+  Log::info << (string) << Log::endl;
 }
 
 

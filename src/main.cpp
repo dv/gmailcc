@@ -119,8 +119,8 @@ int main(int argc, char* argv[])
 	//bool incomplete;
 	
 	unsigned long uid;
-	char* header;
-	char* content;
+	char* body_data; string body;	
+	long unsigned int body_length;
 	
 	mb->uid_validity = client.uid_validity;
 	mb->next_uid = client.uid_next;
@@ -154,18 +154,15 @@ int main(int argc, char* argv[])
 				
 				if (uid == 0) finalize(client, *maildb, "(new mail) mail_uid is 0");	// Connection broken
 				
-				header = mail_fetchheader_full(client.stream, client.msg_index, NULL, NULL, FT_PREFETCHTEXT);
-				
-				if (!header[0]) finalize(client, *maildb, "header is NIL"); // Conection broken
-				
-				content = mail_fetchtext_full(client.stream, client.msg_index, NULL, FT_PEEK);
-				
-// TODO: if content[0] it could be because of an empty mail OR an error. Create a "check_error" function and test it
-//				if (!content[0]) finalize(client, *maildb, "content is NIL"); // Connection broken
-				if (!content[0]) Log::error << "An empty mail or a broken connection" << Log::endl;					
+				body.clear();
+				body_data = mail_fetchbody_full(client.stream, client.msg_index, "", &body_length, FT_PEEK | FT_INTERNAL);
+				body.append(body_data, body_length);				// Convert to string using the content_length because of possible
+																	// binary data inside (and thus also /0 characters.		
+											
+				if (!body.size()) finalize(client, *maildb, "Body is empty");
 				
 				
-				mr = maildb->new_mail(envelope->message_id, uid, header, content);
+				mr = maildb->new_mail(envelope->message_id, uid, body);
 			}
 			else			// Existing mail
 			{

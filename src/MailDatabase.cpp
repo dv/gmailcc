@@ -124,6 +124,7 @@ MailRecord* MailDatabase::add_mail(string messageid, MailBox* mailbox, unsigned 
 	return mr;
 }
 
+
 MailRecord* MailDatabase::new_mail(string messageid, MailBox* mailbox, unsigned long uid)
 {
 	MailRecord* mr = get_mail(messageid);
@@ -136,7 +137,14 @@ MailRecord* MailDatabase::new_mail(string messageid, MailBox* mailbox, unsigned 
 	return mr;
 }
 
+
 MailRecord* MailDatabase::new_mail(string messageid, unsigned long uid, string header, string content)
+{
+	return new_mail(messageid, uid, header + '\n' + content);	
+
+}
+
+MailRecord* MailDatabase::new_mail(string messageid, unsigned long uid, string body)
 {
 	MailRecord* mr = get_mail(messageid);
 	
@@ -147,7 +155,7 @@ MailRecord* MailDatabase::new_mail(string messageid, unsigned long uid, string h
 	
 	mr->messageid = messageid;
 	mr->mainlink = mr->add_to_mailbox(get_mailbox("[Gmail]/All Mail"), uid);
-	mr->save_content(header, content);
+	mr->save_content(body);
 	
 	messages.push_back(mr);
 	

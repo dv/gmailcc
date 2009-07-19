@@ -116,7 +116,7 @@ void MailRecord::set_flag_trashed(bool flag_trashed)
 	this->flags_changed();
 }
 
-void MailRecord::save_content(string header, string content)
+void MailRecord::save_content(string body)
 {
 	ofstream mfile;	
 
@@ -124,8 +124,7 @@ void MailRecord::save_content(string header, string content)
 	
 	if (mfile.is_open())
 	{
-		mfile << header << endl;
-		mfile << content;
+		mfile << body;
 		mfile.close();
 	}
 	else Log::error << "Unable to open file " << mainlink->path << Log::endl;

@@ -86,7 +86,9 @@ public:
 	MailRecord* add_mail(string messageid, MailBox* mailbox, unsigned long uid, string path);	// Use it when loading database
 	
 	MailRecord* new_mail(string messageid, MailBox* mailbox, unsigned long uid);	// Add new mail to secondary mailbox, no text necessary
+	MailRecord* new_mail(string messageid, unsigned long uid, string body);
 	MailRecord* new_mail(string messageid, unsigned long uid, string header, string content);		// Add new mail to All Messages
+	
 	
 	void remove_mail(MailRecord* mr, MailBox* mailbox = NULL);
 	void remove_mail(string messageid, MailBox* mailbox = NULL);

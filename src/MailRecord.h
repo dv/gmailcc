@@ -56,7 +56,7 @@ public:
 	void set_flag_trashed(bool flag_trashed);
 	
 	// Management
-	void save_content(string header, string content);
+	void save_content(string body);
 	MailLink* add_to_mailbox(MailBox* mailbox, unsigned long uid, string path = "");
 	void remove_from_mailbox(MailBox* mailbox);
 	vector<MailLink*>::iterator remove_from_mailbox(vector<MailLink*>::iterator iter);
