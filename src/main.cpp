@@ -159,17 +159,25 @@ int main(int argc, char* argv[])
 				body.append(body_data, body_length);				// Convert to string using the content_length because of possible
 																	// binary data inside (and thus also /0 characters.		
 											
-				if (!body.size()) Log::info << "An empty mail, how queer." << Log::endl;
-				
+				if (!body.size()) Log::info << "An empty mail, how quaint." << Log::endl;				
 				
 				mr = maildb->new_mail(envelope->message_id, uid, body);
 			}
 			else			// Existing mail
 			{
+				Log::info << "Existing or duplicate mail (message id: " << envelope->message_id << "). " << Log::endl;
 				uid = mail_uid(client.stream, client.msg_index);				
 				if (uid == 0) finalize(client, *maildb, "mail_uid is 0");	// Connection broken
 				
 				mr = maildb->new_mail(envelope->message_id, mb, uid);		// Just update the UID
+			}
+			
+			mail_gc (client.stream, GC_TEXTS);
+			
+			// Garbage collect envelopes
+			if (!(client.msg_index % 20)) {
+				Log::info << "Collect garbage (envelopes)" << Log::endl;
+				mail_gc (client.stream, GC_ENV);
 			}
 		}
 		
@@ -188,9 +196,11 @@ int main(int argc, char* argv[])
 		mr->mark();
 	}
 	
+	mail_gc (client.stream, GC_ELT);
+	
 	// Also check trash & spam here
 	
-	mail_gc (client.stream,GC_ELT | GC_ENV | GC_TEXTS);
+	//mail_gc (client.stream,GC_ELT | GC_ENV | GC_TEXTS);
 	
 	maildb->sweep();
 
