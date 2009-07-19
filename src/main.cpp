@@ -159,7 +159,7 @@ int main(int argc, char* argv[])
 				body.append(body_data, body_length);				// Convert to string using the content_length because of possible
 																	// binary data inside (and thus also /0 characters.		
 											
-				if (!body.size()) finalize(client, *maildb, "Body is empty");
+				if (!body.size()) Log::info << "An empty mail, how queer." << Log::endl;
 				
 				
 				mr = maildb->new_mail(envelope->message_id, uid, body);
