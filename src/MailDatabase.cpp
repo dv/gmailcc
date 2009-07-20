@@ -237,7 +237,7 @@ void MailDatabase::save()
 	
 	ofstream dbfile;
 	
-	dbfile.open("database");
+	dbfile.open((maildir + "database").c_str());
 	
 	cout << "Is it opened?" << endl;
 	
