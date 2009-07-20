@@ -22,6 +22,10 @@ extern "C" {
 #define MAIL_LIST_PATTERN "*"
 
 #define MSG_INVALID_CREDENTIALS "[ALERT] Invalid credentials (Failure)"
+#define MSG_WEB_LOGIN_REQUIRED "[ALERT] Web login required (Failure)"
+
+#define DEF_MAXLOGINTRIALS 1
+#define DEF_OPENTIMEOUT 5
 
 //struct MAILSTREAM;
 
@@ -49,6 +53,7 @@ public:
 								// Gets decremented when a mail is EXPUNGE'd that < msg_index
 	
 	bool invalid_credentials;
+	bool web_login_required;
 	MAILSTREAM* stream;
 	
 	vector<string> mailboxlist;	// List with mailboxes, with {...} removed already
@@ -74,13 +79,13 @@ public:
 	void mm_status (MAILSTREAM *stream, char *mailbox, MAILSTATUS *status);
 	void mm_expunged (MAILSTREAM *stream,unsigned long number);
 	
+
+	
 private:
 	string username;
 	string password;
-	
+
 	void open_stream(string mailbox, long options = OP_READONLY) throw(ClientException); // Wrapper for mail_open
-
-
 	//string current_mailbox;
 	//void change_mailbox(string new_mailbox);
 	

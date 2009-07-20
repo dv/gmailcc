@@ -8,6 +8,7 @@ Client* Client::active;
 void Client::open_stream(string mailbox, long options) throw(ClientException)
 {
 	invalid_credentials = false;
+	web_login_required = false;
 	char* mb = cpystr(remote(mailbox).c_str());
 	
 	//close_mailbox();
@@ -16,7 +17,7 @@ void Client::open_stream(string mailbox, long options) throw(ClientException)
 	free(mb);
 	
 	if (stream == NULL) {
-		if (invalid_credentials)
+		if (invalid_credentials || web_login_required)
 			throw AuthClientException(this);
 		else
 			throw ClientException(this);
@@ -105,10 +106,9 @@ Client::Client()
 	Client::active = this;
 	stream = NULL;
 	
-	// Set operational parameters
-	int value;
-	value = 1; mail_parameters(NIL, SET_MAXLOGINTRIALS, &value);
-	value = 5; mail_parameters(NIL, SET_OPENTIMEOUT, &value);
+	/* Set operational parameters */
+	mail_parameters(NIL, SET_MAXLOGINTRIALS, (void *) DEF_MAXLOGINTRIALS);
+	mail_parameters(NIL, SET_OPENTIMEOUT, (void * ) DEF_OPENTIMEOUT);
 }
 
 Client::~Client()
@@ -261,6 +261,9 @@ void mm_log (char *msg,long errflg)
 		
 		if (strcmp(msg, MSG_INVALID_CREDENTIALS) == 0)
 			Client::active->invalid_credentials = true;
+			
+		if (strcmp(msg, MSG_WEB_LOGIN_REQUIRED) == 0)
+			Client::active->web_login_required = true;
 		
 		break;
 	case ERROR:
