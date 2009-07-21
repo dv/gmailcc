@@ -302,14 +302,14 @@ void mm_nocritical (MAILSTREAM *stream)
 
 long mm_diskerror (MAILSTREAM *stream,long errcode,long serious)
 {
-	/*
+	
 #if UNIXLIKE
   kill (getpid (),SIGSTOP);
 #else
   abort ();
 #endif
   return NIL;
-  */
+  
 }
 
 
