@@ -11,6 +11,8 @@ int MailRecord::number_of_deliveries = 0;
 
 MailRecord::MailRecord()
 {
+	marked = false;
+	
 	flag_draft = false;
 	flag_flagged = false;
 	flag_passed = false;
@@ -134,7 +136,7 @@ MailLink* MailRecord::add_to_mailbox(MailBox* mailbox, unsigned long uid, string
 {
 	MailLink* maillink = find_link(mailbox);
 	
-	if (maillink != NULL)
+	if (maillink != NULL)			// Existing mail: just update UID
 	{
 		maillink->uid = uid;
 		

@@ -36,8 +36,7 @@ public:
 
 private:
 	bo::variables_map* vm;
-	bo::options_description* desc;
-	 
+	bo::options_description* desc;	 
 };
 
 #endif /*OPTIONS_H_*/

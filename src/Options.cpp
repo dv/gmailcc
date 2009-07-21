@@ -36,8 +36,8 @@ void Options::show_help()
 
 
 bool Options::incomplete()
-{
-	return !(vm->count("username") && vm->count("password") && vm->count("maildir"));	
+{	
+	return (!(vm->count("username") && vm->count("password") && vm->count("maildir")));
 }
 
 bool Options::get_help()
@@ -60,20 +60,29 @@ char* Options::get_logfile()
 	if (vm->count("logfile"))
 		return (*vm)["logfile"].as<char*>();
 	else
-		return NULL;
+		return "";
 }
 
 std::string Options::get_maildir_path()
 {
-	return (*vm)["maildir"].as<std::string>();
+	if (vm->count("maildir"))
+		return (*vm)["maildir"].as<std::string>();
+	else
+		return "";
 }
 
 std::string Options::get_username()
 {
-	return (*vm)["username"].as<std::string>();
+	if (vm->count("username"))
+		return (*vm)["username"].as<std::string>();
+	else
+		return "";
 }
 
 std::string Options::get_password()
 {
-	return (*vm)["password"].as<std::string>();
+	if (vm->count("password"))
+		return (*vm)["password"].as<std::string>();
+	else
+		return "";
 }

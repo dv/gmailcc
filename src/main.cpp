@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include <iostream>
 
 #include "Client.h"
@@ -71,14 +73,49 @@ int main(int argc, char* argv[])
 	// Check configuration
 	Options options(argc, argv);
 	
+	string username;
+	string password;
+	string maildir;
+	
 	if (options.get_version()) {
 		show_version(); return 1;
 	}
 	
-	if (options.get_help() || options.incomplete())	{
+	if (options.get_help())	{
 		options.show_help(); return 1;
 	}
+	
+	username = options.get_username();
+	password = options.get_password();
+	maildir = options.get_maildir_path();
 
+	if (options.incomplete()) {
+		if (isatty(fileno(stdin)) && isatty(fileno(stdout)))		// If input and output is a terminal, we can still ask the user for values
+		{
+			if (username.empty()) {
+				cout << "Gmail username: ";
+				cin >> username;
+			}
+			
+			if (password.empty()) {
+				cout << "Gmail password: ";
+				cin >> password;
+			}
+			
+			if (maildir.empty()) {
+				cout << "Target maildir: ";
+				cin >> maildir;
+			}
+			
+			cout << endl;
+		}
+		else
+		{
+			options.show_help();
+			return 1;
+		}
+	}
+	
 	// Start logger
 	Log::set_priority(options.get_loglevel());
 	Log::info << "Started" << Log::endl;
@@ -91,11 +128,11 @@ int main(int argc, char* argv[])
 	MESSAGECACHE* msgcache;
 	
 	// Load local database
-	MailDatabase* maildb = MailDatabase::load(options.get_maildir_path());
+	MailDatabase* maildb = MailDatabase::load(maildir);
 
 	// Connect to IMAP server
 	try {
-		client.connect(options.get_username(), options.get_password());
+		client.connect(username, password);
 	} catch (AuthClientException &e) {
 		Log::critical << "Unable to log-in to server because of invalid credentials. Please check your username and password" << Log::endl;
 		finalize(client, *maildb);
@@ -133,15 +170,20 @@ int main(int argc, char* argv[])
 	//cout << "Checking " << client.count_messages << " (" << client.get_cachecount() << ") messages." << endl;
 	
 	for(client.msg_index = 1; client.msg_index <= client.get_cachecount(); client.msg_index++) {
-		Log::info << "Message index: " << client.msg_index << ", Count: " << client.get_cachecount() << Log::endl;
+		Log::info << "Mail " << client.msg_index << " of " << client.get_cachecount();
 		
 		mr = NULL;
+		
+		uid = mail_uid(client.stream, client.msg_index);
+		if (uid == 0) finalize(client, *maildb, "(new mail) mail_uid is 0");	// Connection broken			
 	
 		if (!refresh_uids) {
-			mr = maildb->get_mail(mail_uid(client.stream, client.msg_index));		// Try to load the email from our local database using the UID (long)
+
+			mr = maildb->get_mail(uid);		// Try to load the email from our local database using the UID (long)
 		}
 		
 		if (mr == NULL) {	// If UID is invalid or it's a new mail
+			Log::info << ", uid unknown";
 			envelope = mail_fetchenvelope(client.stream, client.msg_index);			// First fetch the mail metadata
 			
 			if (envelope == NIL) finalize(client, *maildb, "Envelope is NIL");							// Connection broken
@@ -150,36 +192,47 @@ int main(int argc, char* argv[])
 			
 			if (mr == NULL)	// New mail
 			{
-				uid = mail_uid(client.stream, client.msg_index);
-				
-				if (uid == 0) finalize(client, *maildb, "(new mail) mail_uid is 0");	// Connection broken
-				
+				Log::info << ", message id unknown. Download." << Log::endl;
+			
 				body.clear();
 				body_data = mail_fetchbody_full(client.stream, client.msg_index, "", &body_length, FT_PEEK | FT_INTERNAL);
 				body.append(body_data, body_length);				// Convert to string using the content_length because of possible
 																	// binary data inside (and thus also /0 characters.		
 											
-				if (!body.size()) Log::info << "An empty mail, how quaint." << Log::endl;				
+				if (!body.size()) Log::info << " -- An empty mail, how quaint." << Log::endl;				
 				
 				mr = maildb->new_mail(envelope->message_id, uid, body);
 			}
 			else			// Existing mail
 			{
-				Log::info << "Existing or duplicate mail (message id: " << envelope->message_id << "). " << Log::endl;
-				uid = mail_uid(client.stream, client.msg_index);				
-				if (uid == 0) finalize(client, *maildb, "mail_uid is 0");	// Connection broken
+				Log::info << ", message id known. ";
 				
-				mr = maildb->new_mail(envelope->message_id, mb, uid);		// Just update the UID
+				if (refresh_uids)
+				{
+					Log::info << "Set uid.";
+					mr = maildb->new_mail(envelope->message_id, mb, uid);		// Just update the UID
+				}
+				else
+				{
+					Log::info << "Duplicate: ignore." << Log::endl;
+				}
+			
 			}
+		}		
+		else
+		{
+			Log::info << ", uid known.." << Log::endl;			
+		}
 			
-			mail_gc (client.stream, GC_TEXTS);
 			
+			mail_gc (client.stream, GC_TEXTS);		// TODO: Maybe move this to the gc envelopes statement to also 
+													// execute periodically?
+													
+				
 			// Garbage collect envelopes
 			if (!(client.msg_index % 20)) {
-				Log::info << "Collect garbage (envelopes)" << Log::endl;
-				mail_gc (client.stream, GC_ENV);
-			}
-		}
+			//	Log::info << "Collect garbage (envelopes)" << Log::endl;
+				mail_gc (client.stream, GC_ENV); }
 		
 		msgcache = mail_elt(client.stream, client.msg_index);
 		
@@ -203,6 +256,7 @@ int main(int argc, char* argv[])
 	//mail_gc (client.stream,GC_ELT | GC_ENV | GC_TEXTS);
 	
 	maildb->sweep();
+	//mb->sweep();
 
 					
 	// Load secondary mails
