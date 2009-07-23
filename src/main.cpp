@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <time.h>
 
 #include <iostream>
 
@@ -119,6 +120,10 @@ int main(int argc, char* argv[])
 	// Start logger
 	Log::set_priority(options.get_loglevel());
 	Log::info << "Started" << Log::endl;
+	
+	// Start timer
+	time_t start_time = time(NULL);
+	Log::info << "Started timer" << Log::endl;
  
  	// Variables
 	Client client;
@@ -413,8 +418,7 @@ int main(int argc, char* argv[])
 	}
 	
 	*/
-	
-	Log::info << "Ended succesfully" << Log::endl;
+	Log::info << "Succesfully completed in " << (time(NULL) - start_time) << " seconds." << Log::endl;  
 	
 	finalize(client, *maildb);
 
