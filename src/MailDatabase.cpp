@@ -306,8 +306,11 @@ MailDatabase* MailDatabase::load(string path)
 		MailBox* currentmb;
 		
 		// Header
-		getline(dbfile, line);	// Comment
-		getline(dbfile, line);	// endl, signifies end of comments
+		getline(dbfile, line);	// First line of comment
+		while(!line.empty())
+		{
+			getline(dbfile, line);	// Read next line of comment
+		}
 		getline(dbfile, line);	// version, "1"
 		
 		getline(dbfile, line);
