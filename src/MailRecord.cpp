@@ -288,7 +288,7 @@ void MailRecord::extract_base_path(string& path)
 
 string MailRecord::generate_md_filename()
 {
-	char seconds[20];	sprintf(seconds, "%d", time(NULL));
+	char seconds[20];	sprintf(seconds, "%lu", (unsigned long) time(NULL));
 
 	char hostname[99] = "hostnamex";
 	string shostname;

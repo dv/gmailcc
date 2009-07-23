@@ -189,7 +189,7 @@ void mm_expunged (MAILSTREAM *stream,unsigned long number)
 	// 3861 mm_log: %Unknown message data: 1886 EXPUNGE
 	// 3862 mm_log: %Unknown message data: 1893 EXPUNGE	
 	
-	printf("Expunged %d\n", number);
+	printf("Expunged %lu\n", number);
 	Client::active->mm_expunged(stream, number);
 }
 
