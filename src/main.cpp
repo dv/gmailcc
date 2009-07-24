@@ -2,6 +2,7 @@
 #include <time.h>
 
 #include <iostream>
+#include <algorithm>
 
 #include "Client.h"
 #include "MailDatabase.h"
@@ -123,10 +124,12 @@ int main(int argc, char* argv[])
 	
 	// Start timer
 	time_t start_time = time(NULL);
-	Log::info << "Started timer" << Log::endl;
  
  	// Variables
 	Client client;
+	unsigned long cacheindex = 0;
+	int cacheinterval = 1000;
+	char* cachestring = new char[50];
 	MailBox* mb;
 	MailRecord* mr;
 	ENVELOPE* envelope;
@@ -151,7 +154,6 @@ int main(int argc, char* argv[])
 	
 	// Load primary mailboxes
 	client.open_mailbox("[Gmail]/All Mail");
-	mail_fetchfast(client.stream, "1:*");			// We'll need to check the flags either way
 	mb = maildb->add_mailbox("[Gmail]/All Mail");
 	
 	
@@ -166,17 +168,29 @@ int main(int argc, char* argv[])
 	
 	mb->uid_validity = client.uid_validity;
 	mb->next_uid = client.uid_next;
-	mb->messagecount = client.count_messages;
+	mb->messagecount = client.get_mailcount();
 	
 	//incomplete = mb->messagecount != mb->mails.size();
 	
-	Log::info << "Mailbox has " << client.count_messages << " messages." << Log::endl;
+	Log::info << "Mailbox has " << client.get_mailcount() << " messages." << Log::endl;
 	// << client.count_messages << client.get_cachecount() << endl;
 	//cout << "Checking " << client.count_messages << " (" << client.get_cachecount() << ") messages." << endl;
 	
-	for(client.msg_index = 1; client.msg_index <= client.get_cachecount(); client.msg_index++) {
-		Log::info << "Mail " << client.msg_index << " of " << client.get_cachecount();
+	for(client.msg_index = 1; client.msg_index <= client.get_mailcount(); client.msg_index++) {		
+		// Check if we need to cache them
+		if (cacheindex < client.msg_index)
+		{
+			sprintf(cachestring, "%d:%d", cacheindex+1, cacheindex+cacheinterval);
+			Log::info << "Caching status of mails " << cacheindex+1 << " to " << min(cacheindex+cacheinterval, client.get_mailcount()) << "." << Log::endl;
+			
+			cacheindex = min(cacheindex+cacheinterval, client.get_mailcount());			
+			
+			mail_gc (client.stream, GC_ELT);	// Garbage collect the old ones
+			mail_fetchfast(client.stream, cachestring);			// We'll need to check the flags either way		
+		}
 		
+		Log::info << "Mail " << client.msg_index << " of " << client.get_mailcount();
+				
 		mr = NULL;
 		
 		uid = mail_uid(client.stream, client.msg_index);
@@ -214,7 +228,7 @@ int main(int argc, char* argv[])
 				
 				if (refresh_uids)
 				{
-					Log::info << "Set uid.";
+					Log::info << "Set uid." << Log::endl;
 					mr = maildb->new_mail(envelope->message_id, mb, uid);		// Just update the UID
 				}
 				else
@@ -226,7 +240,7 @@ int main(int argc, char* argv[])
 		}		
 		else
 		{
-			Log::info << ", uid known.." << Log::endl;			
+			Log::info << ", uid known." << Log::endl;			
 		}
 			
 			
@@ -280,7 +294,7 @@ int main(int argc, char* argv[])
 		client.open_mailbox(mb->name);
 		
 		new_mail = client.uid_next != mb->next_uid;
-		deleted_mail = new_mail || (client.count_messages < mb->messagecount);		// If there's new mail, there's no way of knowing presearch if there are any deleted messages.
+		deleted_mail = new_mail || (client.get_mailcount() < mb->messagecount);		// If there's new mail, there's no way of knowing presearch if there are any deleted messages.
 		refresh_uids = client.uid_validity != mb->uid_validity;
 		
 		Log::info << "This mailbox has possibly ";
@@ -290,14 +304,14 @@ int main(int argc, char* argv[])
 		
 		mb->uid_validity = client.uid_validity;
 		mb->next_uid = client.uid_next;
-		mb->messagecount = client.count_messages;
+		mb->messagecount = client.get_mailcount();
 		
-		Log::info << "Checking " << client.count_messages << " (" << client.get_cachecount() << ") messages." << Log::endl;
+		Log::info << "Checking " << client.get_mailcount() << " messages." << Log::endl;
 		
 		
 		if (new_mail || deleted_mail || refresh_uids)
 		{		
-			for(client.msg_index = 1; client.msg_index <= client.get_cachecount(); client.msg_index++)
+			for(client.msg_index = 1; client.msg_index <= client.get_mailcount(); client.msg_index++)
 			{
 				mr = NULL;
 				

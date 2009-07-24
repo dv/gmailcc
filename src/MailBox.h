@@ -12,6 +12,8 @@ using namespace std;
 class MailBox
 {
 public:
+	static bool is_primary(const string);
+
 	bool primary;
 	unsigned long next_uid;
 	unsigned long uid_validity;
@@ -30,6 +32,8 @@ public:
 	~MailBox();
 	
 private:
+	static const char* primaries[];
+
 	string path;
 	bool dirtied;						// Needs sweeping to get rid of removed links
 	MailDatabase* maildb;

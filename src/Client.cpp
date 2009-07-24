@@ -62,11 +62,16 @@ void Client::get_mailboxen()
 	mail_list(stream, MAIL_LIST_REFERENCE, MAIL_LIST_PATTERN);
 }
 
-unsigned long Client::get_cachecount()
+unsigned long Client::get_mailcount()
 {
 	return stream->nmsgs;
 }
-
+/*
+ * These two functions are deprecated since we found out Gimap (Gmail's IMAP server) has a bug
+ * where stream->nmsgs is smaller than the count returned by mail_status. stream->nmsgs is the
+ * correct number.
+ */
+ /*
 unsigned long Client::get_mailcount()
 {
 	mail_status(stream, stream->mailbox, SA_MESSAGES);
@@ -85,7 +90,7 @@ unsigned long Client::get_mailcount(string mailbox)
 	
 	return count_messages;
 }
-
+*/
 
 void Client::disconnect()
 {
@@ -133,7 +138,7 @@ void Client::mm_list(MAILSTREAM *stream, char delim, char *name, long attrib)
 
 void Client::mm_status (MAILSTREAM *stream, char *mailbox, MAILSTATUS *status)
 {
-  if (status->flags & SA_MESSAGES) this->count_messages = status->messages;
+  //if (status->flags & SA_MESSAGES) this->count_messages = status->messages;
   if (status->flags & SA_RECENT) this->count_recent = status->recent;
   if (status->flags & SA_UNSEEN) this->count_unseen = status->unseen;
   if (status->flags & SA_UIDVALIDITY) this->uid_validity = status->uidvalidity;
@@ -144,7 +149,7 @@ void Client::mm_expunged (MAILSTREAM *stream,unsigned long number)
 {
 	// "number" is removed from the mailbox, so every subsequent message's number has been decremented
 
-	count_messages--;
+	//count_messages--;
 	
 	// However, this shouldn't affect our FETCH operations since according to the rfc's
 	// the server MUST NOT send an EXPUNGE in response to a FETCH, to "maintain sync

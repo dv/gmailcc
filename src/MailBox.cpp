@@ -3,6 +3,17 @@
 #include "MailDatabase.h"
 #include "MailLink.h"
 
+const char* MailBox::primaries[] = { "[Gmail]/All Mail", "[Gmail]/Trash", "[Gmail]/Spam" };		// If you change the itemcount, change it in is_primary too
+
+bool MailBox::is_primary(const string name)
+{
+	for(int i = 0; i < 3; i++) {
+		if (strcmp(primaries[i], name.c_str()) == 0)
+			return true;
+	}
+			
+	return false;	
+}
 
 string MailBox::get_path()
 {
@@ -51,6 +62,8 @@ int MailBox::sweep()
 MailBox::MailBox(MailDatabase* maildb, string name): name(name), maildb(maildb)
 {
 	path = "." + name; 
+	
+	primary = is_primary(name);
 	
 	// Generate directorypath
 	size_t index = 0;	

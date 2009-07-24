@@ -42,7 +42,6 @@ class Client
 public:
 	static Client *active;
 	
-	unsigned long count_messages;
 	unsigned long count_recent;
 	unsigned long count_unseen;
 	
@@ -65,8 +64,8 @@ public:
 	void close_mailbox();
 	void refresh_mailbox(string mailbox);			// Retrieve the messagecount, UID-next and UID-validity
 	unsigned long get_mailcount();
-	unsigned long get_mailcount(string mailbox);
-	unsigned long get_cachecount();
+	/*unsigned long get_mailcount(string mailbox);
+	unsigned long get_cachecount();*/
 	
 	string remote(string mailbox);
 

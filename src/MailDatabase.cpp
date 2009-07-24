@@ -24,8 +24,6 @@ MailBox* MailDatabase::add_mailbox(string mailbox)
 		return box;
 		
 	box = new MailBox(this, mailbox);
-	
-	box->primary = is_primary(mailbox);
 
 	// Make sure the directory structure is there
 	create_maildir(box->get_path());
@@ -201,11 +199,6 @@ MailDatabase* MailDatabase::create(string path)
 	return NULL;
 }
 
-
-bool MailDatabase::is_primary(string mailbox)
-{
-	return mailbox.compare("[Gmail]/All Mail") == 0;	
-}
 
 MailBox* MailDatabase::get_mailbox(string mailbox)
 {
