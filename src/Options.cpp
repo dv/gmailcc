@@ -9,8 +9,8 @@ Options::Options(int argc, char* argv[])
 	vm = new bo::variables_map();
 	
 	desc->add_options()
-		("help", "produce help message")
-		("version", "show version information")
+		("help,?,h", "produce help message")
+		("version,v", "show version information")
 		("loglevel", bo::value<int>()->default_value(2), "set loglevel")
 		("logfile", bo::value<std::string>(), "file to log to")
 		("username,u", bo::value<std::string>(), "username to be used to log in. If you're using Gmail, you can omit @gmail.com. If you're using Google Apps, please add your domain, e.g. john@smith.com")
