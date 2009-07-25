@@ -207,6 +207,11 @@ int main(int argc, char* argv[])
 			
 			if (envelope == NIL) finalize(client, *maildb, "Envelope is NIL");							// Connection broken
 			
+			if ((envelope->message_id == NULL) || (envelope->message_id[0] == '\0')) {
+				Log::error << ", mail has empty message-id. Ignore." << Log::endl;
+				continue;
+			}
+			
 			mr = maildb->get_mail(envelope->message_id);							// Again, try to load the email from our local database, this time using the message ID (string)
 			
 			if (mr == NULL)	// New mail
