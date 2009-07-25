@@ -28,7 +28,7 @@ public:
 	string get_path();
 	void mark();
 	void dirty();
-	int sweep();
+	int sweep(bool check_marked = false);
 	
 	MailBox(MailDatabase* maildb, string name);
 	~MailBox();

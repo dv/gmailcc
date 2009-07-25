@@ -348,7 +348,7 @@ int main(int argc, char* argv[])
 						iter++;
 				}*/
 				
-				mb->sweep();
+				mb->sweep(true);
 			}
 			
 			mail_gc (client.stream,GC_ELT | GC_ENV | GC_TEXTS);
