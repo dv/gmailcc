@@ -62,8 +62,6 @@ vector<MailRecord*>::iterator MailDatabase::get_imail(string messageid)	// TODO:
 {
 	for (vector<MailRecord*>::iterator iter = messages.begin(); iter < messages.end(); iter++)
 	{
-			//cout << "Comparing " << messageid << " with " << (*iter)->messageid << ": ";
-			//cout << messageid.compare((*iter)->messageid) << endl;
 			if (messageid.compare((*iter)->messageid) == 0)
 			{
 				return iter;	
@@ -152,7 +150,6 @@ MailRecord* MailDatabase::new_mail(string messageid, unsigned long uid, string b
 		mr = new MailRecord;
 	
 	mr->messageid = messageid;
-	//mr->mainlink = 
 	mr->add_to_mailbox(get_mailbox("[Gmail]/All Mail"), uid);
 	mr->save_content(body);
 	
