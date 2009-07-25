@@ -239,7 +239,6 @@ void mm_lsub (MAILSTREAM *stream,int delimiter,char *mailbox,long attributes)
 
 void mm_status (MAILSTREAM *stream,char *mailbox,MAILSTATUS *status)
 {
-	printf("Status!\n");
   Client::active->mm_status(stream, mailbox, status);
 }
 

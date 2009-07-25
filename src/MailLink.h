@@ -16,7 +16,7 @@ public:
 	unsigned long uid;
 	string path;
 	
-	bool staled;					// This links is stale. It should be removed.
+	bool staled;				// This links is stale. It should be removed.
 	bool marked;				// Set to true when this link is found on the
 								// server. After everything is checked, all
 								// non-touched links are regarded as "deleted"
