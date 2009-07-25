@@ -173,19 +173,17 @@ int main(int argc, char* argv[])
 	//incomplete = mb->messagecount != mb->mails.size();
 	
 	Log::info << "Mailbox has " << client.get_mailcount() << " messages." << Log::endl;
-	// << client.count_messages << client.get_cachecount() << endl;
-	//cout << "Checking " << client.count_messages << " (" << client.get_cachecount() << ") messages." << endl;
 	
 	for(client.msg_index = 1; client.msg_index <= client.get_mailcount(); client.msg_index++) {		
 		// Check if we need to cache them
 		if (cacheindex < client.msg_index)
 		{
-			sprintf(cachestring, "%d:%d", cacheindex+1, cacheindex+cacheinterval);
+			sprintf(cachestring, "%lu:%lu", cacheindex+1, cacheindex+cacheinterval);
 			Log::info << "Caching status of mails " << cacheindex+1 << " to " << min(cacheindex+cacheinterval, client.get_mailcount()) << "." << Log::endl;
 			
 			cacheindex = min(cacheindex+cacheinterval, client.get_mailcount());			
 			
-			mail_gc (client.stream, GC_ELT);	// Garbage collect the old ones
+			mail_gc (client.stream, GC_ELT);					// Garbage collect the old ones
 			mail_fetchfast(client.stream, cachestring);			// We'll need to check the flags either way		
 		}
 		
@@ -276,11 +274,8 @@ int main(int argc, char* argv[])
 	mail_gc (client.stream, GC_ELT);
 	
 	// Also check trash & spam here
-	
-	//mail_gc (client.stream,GC_ELT | GC_ENV | GC_TEXTS);
-	
+		
 	maildb->sweep();
-	//mb->sweep();
 
 					
 	// Load secondary mails
