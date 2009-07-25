@@ -19,4 +19,16 @@ public:
 	AuthClientException(Client *client): ClientException(client) {};	
 };
 
+class InvalidAuthClientException: public AuthClientException
+{
+public:
+	InvalidAuthClientException(Client *client): AuthClientException(client) {};
+};
+
+class WebAuthClientException: public AuthClientException
+{
+public:
+	WebAuthClientException(Client *client): AuthClientException(client) {};
+};
+
 #endif /*CLIENTEXCEPTION_H_*/

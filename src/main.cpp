@@ -45,9 +45,10 @@ Errors:
  
 void show_version()
 {
-	cout << "Gmail Carbon Copy v0.1.x - released July 2009" << endl;
+	cout << "Gmail Carbon Copy v0.2.x - released July 2009" << endl;
 	cout << "http://code.crowdway.com/gmailcc" << endl;
 	cout << "Copyright (c) 2009 David Verhasselt (david@crowdway.com)" << endl;
+	cout << "PCB-free" << endl;
 	cout << endl;
 	cout << "Compiled at " << __TIMESTAMP__ << " using g++ " << __VERSION__ << endl;
 }
@@ -141,8 +142,11 @@ int main(int argc, char* argv[])
 	// Connect to IMAP server
 	try {
 		client.connect(username, password);
-	} catch (AuthClientException &e) {
-		Log::critical << "Unable to log-in to server because of invalid credentials. Please check your username and password" << Log::endl;
+	} catch (InvalidAuthClientException &e) {
+		Log::critical << "Unable to log-in to server because of invalid credentials. Please check your username and password." << Log::endl;
+		finalize(client, *maildb);
+	} catch (WebAuthClientException &e) {
+		Log::critical << "Unable to log-in to server because Gmail requires a one-time web login. Please use your browser to login once." << Log::endl;
 		finalize(client, *maildb);
 	} catch(ClientException &e) {
 		Log::critical << "Unable to log-in to server because of an unknown reason. Please check your internet connection." << Log::endl;

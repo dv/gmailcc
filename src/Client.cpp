@@ -17,8 +17,10 @@ void Client::open_stream(string mailbox, long options) throw(ClientException)
 	free(mb);
 	
 	if (stream == NULL) {
-		if (invalid_credentials || web_login_required)
-			throw AuthClientException(this);
+		if (invalid_credentials)
+			throw InvalidAuthClientException(this);
+		else if (web_login_required)
+			throw WebAuthClientException(this);
 		else
 			throw ClientException(this);
 	}	
