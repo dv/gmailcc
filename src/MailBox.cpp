@@ -15,6 +15,12 @@ bool MailBox::is_primary(const string name)
 	return false;	
 }
 
+bool MailBox::is_inbox(const string name)
+{
+	return (name.compare("INBOX") == 0);
+}
+
+
 string MailBox::get_path()
 {
 	return path;
@@ -61,16 +67,23 @@ int MailBox::sweep()
 
 MailBox::MailBox(MailDatabase* maildb, string name): name(name), maildb(maildb)
 {
-	path = "." + name; 
-	
+	inbox = is_inbox(name);
 	primary = is_primary(name);
 	
-	// Generate directorypath
-	size_t index = 0;	
-	while((index = path.find("/", index)) != string::npos)
-		path.replace(index, 1, ".");
+	if (inbox) {
+		path = maildb->get_maildir();
+	}
 	
-	path = maildb->get_maildir() + path + "/";
+	else {
+		path = "." + name; 
+			
+		// Generate directorypath
+		size_t index = 0;	
+		while((index = path.find("/", index)) != string::npos)
+			path.replace(index, 1, ".");
+	
+		path = maildb->get_maildir() + path + "/";
+	}
 }
 
 MailBox::~MailBox()

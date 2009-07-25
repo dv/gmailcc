@@ -13,7 +13,9 @@ class MailBox
 {
 public:
 	static bool is_primary(const string);
+	static bool is_inbox(const string);
 
+	bool inbox;
 	bool primary;
 	unsigned long next_uid;
 	unsigned long uid_validity;
