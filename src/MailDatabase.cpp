@@ -409,5 +409,8 @@ MailDatabase::MailDatabase()
 
 MailDatabase::~MailDatabase()
 {
-	// TODO: free mailboxes
+	for (vector<MailBox*>::iterator iter = mailboxes.begin(); iter < mailboxes.end(); iter++)
+	{
+		delete (*iter);		
+	}
 }
