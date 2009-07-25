@@ -58,16 +58,12 @@ void finalize(Client& client, MailDatabase& maildb, char* error = NULL)
 {
 	if (error != NULL)
 		Log::error << "Finalizing with error: " << error << Log::endl;
-	else
-		Log::error << "Finalizing without error." << Log::endl;
 
-	client.disconnect();
-	
+	client.disconnect();	
 	maildb.save();
 	
-	cout << "Finalized. Aborting..." << endl;
-	
-	abort();	
+	if (error != NULL)
+		abort();	
 }
  
 
