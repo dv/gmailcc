@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2009 David Verhasselt <david@crowdway.com>
+ * Licensed under The MIT License - http://gmailcc.crowdway.com/license.txt
+ */
+
 #ifndef CLIENT_H_
 #define CLIENT_H_ 
 

@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2009 David Verhasselt <david@crowdway.com>
+ * Licensed under The MIT License - http://gmailcc.crowdway.com/license.txt
+ */
+
 #include <unistd.h>
 #include <time.h>
 
