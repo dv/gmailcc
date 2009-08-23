@@ -60,6 +60,8 @@ public:
 	bool get_flag_trashed();
 	void set_flag_trashed(bool flag_trashed);
 	
+	void sync_flags();
+	
 	// Management
 	void save_content(string body);
 	MailLink* add_to_mailbox(MailBox* mailbox, unsigned long uid, string path = "");
@@ -83,7 +85,7 @@ private:
 		
 	void extract_base_path(string& path);
 	string get_md_info();
-	void flags_changed();
+
 	string convert_to_path(string& mailbox);
 	string generate_md_filename();
 	vector<MailLink*>::iterator find_ilink(MailBox* mailbox);

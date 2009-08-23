@@ -50,7 +50,6 @@ void MailRecord::set_flag_draft(bool flag_draft)
 		return;
 		
 	this->flag_draft = flag_draft;
-	this->flags_changed();
 }
 
 bool MailRecord::get_flag_flagged()
@@ -62,9 +61,8 @@ void MailRecord::set_flag_flagged(bool flag_flagged)
 {
 	if (this->flag_flagged == flag_flagged)
 		return;
-		
+	
 	this->flag_flagged = flag_flagged;
-	this->flags_changed();
 }
 
 bool MailRecord::get_flag_passed()
@@ -76,9 +74,8 @@ void MailRecord::set_flag_passed(bool flag_passed)
 {
 	if (this->flag_passed == flag_passed)
 		return;
-		
+
 	this->flag_passed = flag_passed;
-	this->flags_changed();
 }
 
 bool MailRecord::get_flag_replied()
@@ -90,9 +87,8 @@ void MailRecord::set_flag_replied(bool flag_replied)
 {
 	if (this->flag_replied == flag_replied)
 		return;
-		
+
 	this->flag_replied = flag_replied;
-	this->flags_changed();
 }
 
 bool MailRecord::get_flag_seen()
@@ -104,9 +100,8 @@ void MailRecord::set_flag_seen(bool flag_seen)
 {
 	if (this->flag_seen == flag_seen)
 		return;
-		
+	Log::info << "Seen";
 	this->flag_seen = flag_seen;
-	this->flags_changed();
 }
 
 bool MailRecord::get_flag_trashed()
@@ -118,23 +113,22 @@ void MailRecord::set_flag_trashed(bool flag_trashed)
 {
 	if (this->flag_trashed == flag_trashed)
 		return;
-		
+	
 	this->flag_trashed = flag_trashed;
-	this->flags_changed();
 }
 
 void MailRecord::save_content(string body)
 {
 	ofstream mfile;	
 
-	mfile.open(mainlink->path.c_str());
+	mfile.open(mainlink->get_path().c_str());
 	
 	if (mfile.is_open())
 	{
 		mfile << body;
 		mfile.close();
 	}
-	else Log::error << "Unable to open file " << mainlink->path << Log::endl;
+	else Log::error << "Unable to open file " << mainlink->get_path() << Log::endl;
 }
 
 MailLink* MailRecord::add_to_mailbox(MailBox* mailbox, unsigned long uid, string path)
@@ -147,10 +141,10 @@ MailLink* MailRecord::add_to_mailbox(MailBox* mailbox, unsigned long uid, string
 		
 		if (!path.empty())
 		{
-			if (!rename(maillink->path.c_str(), path.c_str()))
+			if (!rename(maillink->get_path().c_str(), path.c_str()))
 				perror("MailRecord::add_to_mailbox: unable to move link");
 			else
-				maillink->path = path;
+				maillink->set_path(path);
 		}		
 	}
 	else
@@ -170,22 +164,31 @@ MailLink* MailRecord::add_to_mailbox(MailBox* mailbox, unsigned long uid, string
 		
 		maillink->mailrecord = this;
 		maillink->mailbox = mailbox;
-		maillink->path = path;
+		maillink->set_path(path);
 		maillink->uid = uid;
 		
 		this->links.push_back(maillink);
 		mailbox->mails.push_back(maillink);
 		
-		if (!exists && (this->links.size() > 1))	// Create a link to the original
+		if (!exists)
 		{
-			string sourcepath = this->mainlink->path.c_str();
-			//sourcepath.insert(0, "../");
+			if (this->links.size() > 1)	// Create a link to the original
+			{
+				string sourcepath = this->mainlink->get_path().c_str();
+				//sourcepath.insert(0, "../");
 			
-			bf::create_hard_link(sourcepath, path);
-			//	perror("MailRecord::add_to_mailbox: creating symlink failed");
+				bf::create_hard_link(sourcepath, path);
+				//	perror("MailRecord::add_to_mailbox: creating symlink failed");
+			}
+			else			// "Touch" file
+			{
+				ofstream mfile;
+				mfile.open(path.c_str());
+				mfile << "";
+				mfile.close();
+			}
 		}
-		
-		if (exists)
+		else
 		{
 			load_md_info();
 		}
@@ -212,7 +215,7 @@ void MailRecord::remove_from_mailbox(MailBox* mailbox)
 
 vector<MailLink*>::iterator MailRecord::remove_from_mailbox(vector<MailLink*>::iterator iter)
 {
-	if (unlink((*iter)->path.c_str()) != 0)
+	if (unlink((*iter)->get_path().c_str()) != 0)
 			perror("MailRecord::remove_from_mailbox: unable to unlink file");
 			
 	(*iter)->mailbox->dirty();
@@ -257,37 +260,27 @@ vector<MailLink*>::iterator MailRecord::find_ilink(MailBox* mailbox)
 
 /**
  * Regenerates the paths of every mail, moves the files
- * of the mails.
+ * of the mails, also of every link. This is useful if one of the
+ * files has a different info part because another client changed
+ * the flags.
  */
-void MailRecord::flags_changed()
+void MailRecord::sync_flags()
 {	
 	for (vector<MailLink*>::iterator iter = this->links.begin(); iter < links.end(); iter++)
 	{
-		string new_path = (*iter)->path;
-		extract_base_path(new_path);
+		string new_path = (*iter)->get_base_path();
+
 		
 		new_path.insert(new_path.size(), this->get_md_info());
 		
-		if (rename((*iter)->path.c_str(), new_path.c_str()) != 0)
-			perror("MailRecord::flags_changed: Unable to rename file");
-		else
-			(*iter)->path = new_path;				
+		if (new_path.compare((*iter)->get_path()) != 0)
+		{
+			if (rename((*iter)->get_path().c_str(), new_path.c_str()) != 0)
+				perror("MailRecord::flags_changed: Unable to rename file");
+			else
+				(*iter)->set_path(new_path);
+		}				
 	}
-}
-
-/**
- * Parse the given path and extract the path without the
- * tailing info-part.
- */
-void MailRecord::extract_base_path(string& path)
-{
-	size_t index;
-	index = path.rfind(MD_TAIL);
-	
-	if (index != string::npos)
-		path.replace(index, path.length(), "");
-	else
-		perror("MailRecord::update_path: Unable to parse pathname"); 
 }
 
 
@@ -371,22 +364,22 @@ void MailRecord::load_md_info()
 	this->flag_seen = false;
 	this->flag_trashed = false;
 	
-	string path = mainlink->path;	
+	string path = mainlink->get_path();	
 	for(size_t index = path.rfind(MD_TAIL) + strlen(MD_TAIL); index < path.size(); index++)
 	{
 				switch(path[index])
 				{
 					case 'D':
 						this->flag_draft = true; break;
-					case 'F': break;
+					case 'F':
 						this->flag_flagged = true; break;
-					case 'P': break;
+					case 'P':
 						this->flag_passed = true; break;
-					case 'R': break;
+					case 'R':
 						this->flag_replied = true; break;
-					case 'S': break;
+					case 'S':
 						this->flag_seen = true; break;
-					case 'T': break;
+					case 'T':
 						this->flag_trashed = true; break;
 				}				
 	}

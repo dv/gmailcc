@@ -118,6 +118,10 @@ Client::Client()
 	Client::active = this;
 	stream = NULL;
 	
+	invalid_credentials = false;
+	web_login_required = false;
+	fatal_error = false;
+	
 	/* Set operational parameters */
 	mail_parameters(NIL, SET_MAXLOGINTRIALS, (void *) DEF_MAXLOGINTRIALS);
 	mail_parameters(NIL, SET_OPENTIMEOUT, (void * ) DEF_OPENTIMEOUT);
@@ -279,6 +283,15 @@ void mm_log (char *msg,long errflg)
 		break;
 	case ERROR:
 		Log::info << "[c-client] [error] " << msg << Log::endl;
+		
+		if ((strcmp(msg, MSG_CONNECTION_LOST) == 0) ||
+			(strcmp(msg, MSG_CONNECTION_BROKEN) == 0) ||
+			(strcmp(msg, MSG_SYSTEM_ERROR) == 0))
+		{
+			Log::error << "[c-client] Fatal error detected" << Log::endl;
+			Client::active->fatal_error = true;
+		}
+				
 		break;
 	default:
 		Log::info << "[c-client] " << msg << Log::endl;

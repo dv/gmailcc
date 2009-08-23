@@ -208,7 +208,7 @@ int main(int argc, char* argv[])
 			Log::info << ", uid unknown";
 			envelope = mail_fetchenvelope(client.stream, client.msg_index);			// First fetch the mail metadata
 			
-			if (envelope == NIL) finalize(client, *maildb, "Envelope is NIL");							// Connection broken
+			if (envelope == NIL || client.fatal_error) finalize(client, *maildb, "Envelope is NIL");							// Connection broken
 			
 			if ((envelope->message_id == NULL) || (envelope->message_id[0] == '\0')) {
 				Log::error << ", mail has empty message-id. Ignore." << Log::endl;
@@ -225,7 +225,7 @@ int main(int argc, char* argv[])
 				body_data = mail_fetchbody_full(client.stream, client.msg_index, "", &body_length, FT_PEEK | FT_INTERNAL);
 				body.append(body_data, body_length);				// Convert to string using the content_length because of possible
 																	// binary data inside (and thus also /0 characters.		
-											
+				if (client.fatal_error) finalize(client, *maildb, "Fatal Error while downloading body.");
 				if (!body.size()) Log::info << " -- An empty mail, how quaint." << Log::endl;				
 				
 				mr = maildb->new_mail(envelope->message_id, uid, body);
@@ -263,7 +263,7 @@ int main(int argc, char* argv[])
 		
 		msgcache = mail_elt(client.stream, client.msg_index);
 		
-		if (msgcache == NIL)  finalize(client, *maildb, "mail_elt returned NIL");	// Connection broken
+		if (msgcache == NIL || client.fatal_error)  finalize(client, *maildb, "mail_elt returned NIL");	// Connection broken
 		
 		mr->set_flag_draft(msgcache->draft == 1);
 		mr->set_flag_flagged(msgcache->flagged == 1);
@@ -271,6 +271,8 @@ int main(int argc, char* argv[])
 		mr->set_flag_replied(msgcache->answered == 1);
 		mr->set_flag_seen(msgcache->seen == 1);
 		mr->set_flag_trashed(msgcache->deleted == 1);
+		
+		mr->sync_flags();
 		
 		// Set touched to true to signify this mail shouldn't be deleted
 		mr->mark();

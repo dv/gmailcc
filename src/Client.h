@@ -26,8 +26,12 @@ extern "C" {
 #define MAIL_LIST_REFERENCE "{imap.gmail.com}"
 #define MAIL_LIST_PATTERN "*"
 
+#define MSG_SYSTEM_ERROR "System Error (Failure)"
 #define MSG_INVALID_CREDENTIALS "[ALERT] Invalid credentials (Failure)"
 #define MSG_WEB_LOGIN_REQUIRED "[ALERT] Web login required (Failure)"
+#define MSG_CONNECTION_BROKEN "[CLOSED] IMAP connection broken (server response)"
+#define MSG_CONNECTION_LOST "[CLOSED] IMAP connection lost"
+
 
 #define DEF_MAXLOGINTRIALS 1
 #define DEF_OPENTIMEOUT 5
@@ -58,6 +62,7 @@ public:
 	
 	bool invalid_credentials;
 	bool web_login_required;
+	bool fatal_error;
 	MAILSTREAM* stream;
 	
 	vector<string> mailboxlist;	// List with mailboxes, with {...} removed already

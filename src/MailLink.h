@@ -19,7 +19,6 @@ public:
 	MailRecord* mailrecord;
 	MailBox* mailbox;
 	unsigned long uid;
-	string path;
 	
 	bool staled;				// This links is stale. It should be removed.
 	bool marked;				// Set to true when this link is found on the
@@ -29,10 +28,17 @@ public:
 
 	void stale();
 	void mark();
+	
+	string get_base_path();		// Without INFO-part
+	string get_path();			// With INFO-part
+	void set_path(string path);
 
 	MailLink();
 	MailLink(const string box, const unsigned long uid, const string path);
 	virtual ~MailLink();
+	
+private:
+	string path;
 };
 
 #endif /*MAILLINK_H_*/

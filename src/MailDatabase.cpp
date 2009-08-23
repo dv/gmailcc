@@ -251,7 +251,7 @@ void MailDatabase::save()
 			{
 				dbfile << (*mail)->uid << endl;						// uid
 				dbfile << (*mail)->mailrecord->messageid << endl;	// messageid
-				dbfile << (*mail)->path << endl;					// path				
+				dbfile << (*mail)->get_path() << endl;				// path				
 			}
 			
 			dbfile << endl;
