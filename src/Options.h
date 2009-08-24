@@ -41,7 +41,11 @@ public:
 
 private:
 	bo::variables_map* vm;
-	bo::options_description* desc;	 
+	bo::options_description* generic;
+	bo::options_description* config;
+	bo::options_description* cmdline_options;	
+	
+	void load_config_file(const char* filename);
 };
 
 #endif /*OPTIONS_H_*/
