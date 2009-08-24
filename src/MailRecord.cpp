@@ -100,7 +100,7 @@ void MailRecord::set_flag_seen(bool flag_seen)
 {
 	if (this->flag_seen == flag_seen)
 		return;
-	Log::info << "Seen";
+		
 	this->flag_seen = flag_seen;
 }
 
