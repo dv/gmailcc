@@ -131,6 +131,7 @@ int main(int argc, char* argv[])
 	
 	// Start timer
 	time_t start_time = time(NULL);	
+	Log::info << "Started @ " << ctime(&start_time) << Log::endl;
  
  	// Variables
 	Client client;
