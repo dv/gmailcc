@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <wordexp.h>
 
 #include <boost/filesystem.hpp>
 namespace bf = boost::filesystem;
@@ -45,10 +46,8 @@ Options::Options(int argc, char* argv[])
 	{
 		if (vm->count("config"))
 		{
-			if (bf::exists((*vm)["config"].as<std::string>()))
+			if (!load_config_file((*vm)["config"].as<std::string>()))
 			{
-				load_config_file((*vm)["config"].as<char*>());
-			} else {
 				Log::error << "Config-file " << (*vm)["config"].as<std::string>() << "doesn't exist." << Log::endl;
 			}
 		} else {
@@ -56,21 +55,31 @@ Options::Options(int argc, char* argv[])
 			
 			for(int i = 0; i < 2; i++)
 			{
-				if (bf::exists(paths[i]))
-				{
-					load_config_file(paths[i].c_str());
+				if (load_config_file(paths[i].c_str()))
 					break;
-				}
 			}
 		}
 	}
 }
 
-void Options::load_config_file(const char* filename)
+std::string Options::expand_path(std::string path)
 {
-	std::ifstream ifs(filename);
+	wordexp_t exp_result;
+	wordexp(path.c_str(), &exp_result, 0);
+	
+	return exp_result.we_wordv[0];	
+}
+
+bool Options::load_config_file(std::string filename)
+{
+	std::string path = expand_path(filename);	
+	if (!bf::exists(path)) return false;
+	
+	std::ifstream ifs(path.c_str());
 	bo::store(bo::parse_config_file(ifs, *config), *vm);
 	bo::notify(*vm);
+	
+	return true;
 }
 
 Options::~Options()
@@ -111,7 +120,7 @@ int Options::get_loglevel()
 std::string Options::get_logfile()
 {
 	if (vm->count("logfile"))
-		return (*vm)["logfile"].as<std::string>();
+		return expand_path((*vm)["logfile"].as<std::string>());
 	else
 		return "";
 }
@@ -119,7 +128,7 @@ std::string Options::get_logfile()
 std::string Options::get_maildir_path()
 {
 	if (vm->count("maildir"))
-		return (*vm)["maildir"].as<std::string>();
+		return expand_path((*vm)["maildir"].as<std::string>());
 	else
 		return "";
 }

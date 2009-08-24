@@ -45,7 +45,8 @@ private:
 	bo::options_description* config;
 	bo::options_description* cmdline_options;	
 	
-	void load_config_file(const char* filename);
+	std::string expand_path(std::string path);
+	bool load_config_file(std::string filename);
 };
 
 #endif /*OPTIONS_H_*/
