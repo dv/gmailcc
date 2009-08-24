@@ -21,6 +21,7 @@ Options::Options(int argc, char* argv[])
 		("help,?,h", "produce help message")
 		("version,v", "show version information")
 		("config,c", "set config file")
+		("interactive,i", "set interactive mode (no config-files are read)")
 	;
 	
 	config = new bo::options_description("Configuration");
@@ -40,23 +41,26 @@ Options::Options(int argc, char* argv[])
 	bo::store(bo::parse_command_line(argc, argv, *cmdline_options), *vm);
 	bo::notify(*vm);
 	
-	if (vm->count("config"))
+	if (!vm->count("interactive"))
 	{
-		if (bf::exists((*vm)["config"].as<std::string>()))
+		if (vm->count("config"))
 		{
-			load_config_file((*vm)["config"].as<char*>());
-		} else {
-			Log::error << "Config-file " << (*vm)["config"].as<std::string>() << "doesn't exist." << Log::endl;
-		}
-	} else {
-		std::string paths[2] = {"~/.gmailcc.conf", "/etc/gmailcc.conf"};
-		
-		for(int i = 0; i < 2; i++)
-		{
-			if (bf::exists(paths[i]))
+			if (bf::exists((*vm)["config"].as<std::string>()))
 			{
-				load_config_file(paths[i].c_str());
-				break;
+				load_config_file((*vm)["config"].as<char*>());
+			} else {
+				Log::error << "Config-file " << (*vm)["config"].as<std::string>() << "doesn't exist." << Log::endl;
+			}
+		} else {
+			std::string paths[2] = {"~/.gmailcc.conf", "/etc/gmailcc.conf"};
+			
+			for(int i = 0; i < 2; i++)
+			{
+				if (bf::exists(paths[i]))
+				{
+					load_config_file(paths[i].c_str());
+					break;
+				}
 			}
 		}
 	}
