@@ -108,10 +108,10 @@ int Options::get_loglevel()
 	return (*vm)["loglevel"].as<int>();
 }
 
-char* Options::get_logfile()
+std::string Options::get_logfile()
 {
 	if (vm->count("logfile"))
-		return (*vm)["logfile"].as<char*>();
+		return (*vm)["logfile"].as<std::string>();
 	else
 		return "";
 }

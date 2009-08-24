@@ -33,7 +33,7 @@ public:
 	bool get_help();
 	bool get_version();
 	int get_loglevel();
-	char* get_logfile();
+	std::string get_logfile();
 	std::string get_maildir_path();
 	std::string get_username();
 	std::string get_password();

@@ -38,7 +38,7 @@ Log::~Log()
 }
 
 
-void Log::set_logfile(char* path)
+void Log::set_logfile(const char* path)
 {
 	Log::getInstance()->logfile = new std::ofstream(path);	
 	Log::getInstance()->output = Log::getInstance()->logfile;	

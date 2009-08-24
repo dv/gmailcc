@@ -15,6 +15,7 @@
 #include "LogSink.h"
 #include "Options.h"
 
+
 /*
  * TODO: A mail could transfer between All Mail and Trash, two different primary boxes. Our app would remove it from the first and then redownload for the second -> improve?
  * 			-> first check spam & trash
@@ -74,6 +75,10 @@ void finalize(Client& client, MailDatabase& maildb, char* error = NULL)
 
 int main(int argc, char* argv[])
 {
+	// Start logger
+	Log::set_priority(0);
+
+	
 	// Check configuration
 	Options options(argc, argv);
 	
@@ -120,12 +125,12 @@ int main(int argc, char* argv[])
 		}
 	}
 	
-	// Start logger
+	// Configure logger
 	Log::set_priority(options.get_loglevel());
-	Log::info << "Started" << Log::endl;
+	Log::set_logfile(options.get_logfile().c_str());
 	
 	// Start timer
-	time_t start_time = time(NULL);
+	time_t start_time = time(NULL);	
  
  	// Variables
 	Client client;

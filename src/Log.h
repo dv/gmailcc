@@ -31,7 +31,7 @@ public:
 	static char endl;	
 	static char* priorities[];
 	
-	static void set_logfile(char* path);
+	static void set_logfile(const char* path);
 	static void set_priority(int priority);
 	
 	static LogSink debug;
