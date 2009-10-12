@@ -107,8 +107,10 @@ int main(int argc, char* argv[])
 			}
 			
 			if (password.empty()) {
-				cout << "Gmail password: ";
-				cin >> password;
+				char* pass = getpass("Gmail password: ");			// Deprecated, find another way
+				password = pass;
+				memset(pass, '*', strlen(pass));					// Clear memory
+				delete pass;
 			}
 			
 			if (maildir.empty()) {
@@ -171,7 +173,6 @@ int main(int argc, char* argv[])
 	bool new_mail;
 	bool deleted_mail;
 	bool refresh_uids = client.uid_validity != mb->uid_validity;
-	//bool incomplete;
 	
 	unsigned long uid;
 	char* body_data; string body;	
@@ -180,9 +181,7 @@ int main(int argc, char* argv[])
 	mb->uid_validity = client.uid_validity;
 	mb->next_uid = client.uid_next;
 	mb->messagecount = client.get_mailcount();
-	
-	//incomplete = mb->messagecount != mb->mails.size();
-	
+
 	Log::info << "Mailbox has " << client.get_mailcount() << " messages." << Log::endl;
 	
 	for(client.msg_index = 1; client.msg_index <= client.get_mailcount(); client.msg_index++) {		
@@ -349,18 +348,7 @@ int main(int argc, char* argv[])
 			}
 			
 			if (deleted_mail)
-			{			
-				// Loop through every maillink to check if it should be deleted
-				/*for(vector<MailLink*>::reverse_iterator iter = mb->mails.rbegin(); iter < mb->mails.rend(); )
-				{
-					if (!(*iter)->touched)	// It's not touched, delete it
-					{
-						maildb->remove_mail((*iter)->mailrecord, mb);		
-					}
-					else
-						iter++;
-				}*/
-				
+			{							
 				mb->sweep(true);
 			}
 			
@@ -373,78 +361,6 @@ int main(int argc, char* argv[])
 	}
 	
 	Log::info << "End of message checking." << Log::endl;
-	
-	// Use "mail_elt" for mails we've already got, and we know the UID of
-	// Use "fetch_enveloppe" for mails we've already got, but we don't know the UID of (e.g. UID invalid or secondary mailbox)
-	// Use "fetch_text" & "fetch_header" for mails we don't have
-	/*
-	// For all mails in our inventory:
-	mail_fetchfast(client.stream, "1:*");	
-	MESSAGECACHE *mcache;		
-	
-	for(client.msg_index = 1; client.msg_index <= client.count_messages; client.msg_index++)
-	{
-		mcache = mail_elt(client.stream, client.msg_index);
-		
-		cout << "Mail " << client.msg_index << " (uid: " << mcache->cclientPrivate.uid << ")" << endl;
-		cout << " - seen: " << mcache->seen << endl;
-		cout << " - answered: " << mcache->answered << endl;
-		cout << " - recent : " << mcache->recent << endl;
-		cout << endl;
-	}
-	*/
-	
-	// For every secondary mailbox:
-	/*
-	 * 1) msgcount()
-	 * 2) if (UID is valid && count == msg_count() && nextUID == nextUID()))
-	 * 			NOTHING TO BE DONE
-	 * 3) if (nextUID != nextUID())
-	 * 		NEW MAIL inside
-	 * 		possibly removed
-	 * 		possibly other removed, others added
-	 * 			-> need to inspect ALL mail
-	 * 
-	 * 4) if (nextUID == nextUID() && count != msg_count())
-	 * 		MAIL deleted
-	 * 		need to inspect ALL mail
-	 */
-	// For all mails not in our inventory:
-	/*
-	for(client.msg_index = 1; client.msg_index <= client.count_messages; client.msg_index++)
-	{
-		envelope = mail_fetchenvelope(client.stream, client.msg_index);
-		maildb->new_mail(envelope->message_id, mail_uid(client.stream, client.msg_index), mail_fetchheader(client.stream, client.msg_index),mail_fetchtext(client.stream, client.msg_index));
-		
-		cout << "Mail " << client.msg_index << ": '" << envelope->subject << "' with message-id: " << envelope->message_id << endl;	
-	}
-	
-	// Load secondary mails
-	client.open_mailbox("Label2");
-	msgcount = client.get_mailcount();
-	
-	cout << msgcount << endl;
-
-	for(vector<MailBox*>::iterator iter = maildb->mailboxes.begin(); iter < maildb->mailboxes.end(); iter++)
-	{
-		if ((*iter)->name.compare("[Gmail]/All Mail") != 0)
-		{
-			client.open_mailbox((*iter)->name);
-			msgcount = client.get_mailcount();
-			
-			cout << "Submailbox " << (*iter)->name << endl;
-			
-			for(client.msg_index = 1; client.msg_index <= client.count_messages; client.msg_index++)
-			{
-				envelope = mail_fetchenvelope(client.stream, client.msg_index);
-				maildb->new_mail(envelope->message_id, *iter, mail_uid(client.stream, client.msg_index));
-			
-				cout << "Mail " << client.msg_index << ": '" << envelope->subject << "' with message-id: " << envelope->message_id << endl;	
-			}
-		}
-	}
-	
-	*/
 	Log::info << "Succesfully completed in " << (time(NULL) - start_time) << " seconds." << Log::endl;  
 	
 	finalize(client, *maildb);
