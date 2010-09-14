@@ -7,4 +7,4 @@ It detects mails with multiple labels and will save only one copy of each, using
 
 Installation & Usage
 --------------------
-Info on how to install and use it can be found here: http://code.crowdway.com/projects/show/gmailcc
+Info on how to install and use it can be found [on the project site](http://code.crowdway.com/projects/show/gmailcc "Gmail Carbon Copy - Tutorial").
